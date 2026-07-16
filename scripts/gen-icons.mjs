@@ -2,10 +2,10 @@
  * Generate simple PNG PWA icons without external deps (pure PNG via minimal encoder).
  * Run: node scripts/gen-icons.mjs
  */
-import { writeFileSync, mkdirSync } from 'node:fs'
-import { deflateSync } from 'node:zlib'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { deflateSync } from 'node:zlib'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const outDir = join(__dir, '../public/icons')
@@ -15,7 +15,7 @@ function crc32(buf) {
   let c = ~0
   for (let i = 0; i < buf.length; i++) {
     c ^= buf[i]
-    for (let k = 0; k < 8; k++) c = c & 1 ? (0xedb88320 ^ (c >>> 1)) : c >>> 1
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
   }
   return ~c >>> 0
 }
@@ -69,15 +69,9 @@ function paintIcon(x, y, size) {
   // rounded rect bg
   const r = 14
   const inRound =
-    nx >= r &&
-    nx < 64 - r &&
-    ny >= 0 &&
-    ny < 64
+    nx >= r && nx < 64 - r && ny >= 0 && ny < 64
       ? true
-      : nx >= 0 &&
-          nx < 64 &&
-          ny >= r &&
-          ny < 64 - r
+      : nx >= 0 && nx < 64 && ny >= r && ny < 64 - r
         ? true
         : (nx - r) ** 2 + (ny - r) ** 2 <= r * r ||
           (nx - (64 - r)) ** 2 + (ny - r) ** 2 <= r * r ||
@@ -93,11 +87,7 @@ function paintIcon(x, y, size) {
 
   // beer glass body
   const inGlass =
-    nx >= 22 &&
-    nx <= 42 &&
-    ny >= 14 &&
-    ny <= 52 &&
-    Math.abs(nx - 32) < 10 + (ny - 14) * 0.02
+    nx >= 22 && nx <= 42 && ny >= 14 && ny <= 52 && Math.abs(nx - 32) < 10 + (ny - 14) * 0.02
 
   if (inGlass) {
     // amber fill lower part

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Drink } from '@/shared/api/diary'
+import { fullSync, scheduleSync } from '@/features/cloud-sync'
 import { CalendarPage, DayModal, DrinkForm } from '@/pages/calendar'
 import { SettingsPage } from '@/pages/settings'
 import { StatsPage } from '@/pages/statistics'
-import { fullSync, scheduleSync } from '@/features/cloud-sync'
+import type { Drink } from '@/shared/api/diary'
 import { isCloudConfigured } from '@/shared/api/supabase'
 import { onLocalDataChange } from '@/shared/lib/dataChanges'
 import type { TabId } from './model/navigation'
@@ -16,9 +16,7 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0)
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [editingDrink, setEditingDrink] = useState<Drink | null | undefined>(
-    undefined,
-  )
+  const [editingDrink, setEditingDrink] = useState<Drink | null | undefined>(undefined)
 
   const bump = useCallback(() => setRefreshKey((k) => k + 1), [])
 
@@ -84,12 +82,8 @@ export default function App() {
             refreshKey={refreshKey}
           />
         )}
-        {tab === 'stats' && (
-          <StatsPage year={year} month={month} refreshKey={refreshKey} />
-        )}
-        {tab === 'settings' && (
-          <SettingsPage refreshKey={refreshKey} onDataChange={bump} />
-        )}
+        {tab === 'stats' && <StatsPage year={year} month={month} refreshKey={refreshKey} />}
+        {tab === 'settings' && <SettingsPage refreshKey={refreshKey} onDataChange={bump} />}
       </main>
 
       <BottomNav tab={tab} onChange={setTab} />

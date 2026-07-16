@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '@/shared/api/diary'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '@/shared/db/diary'
-import { daysInMonth, toDateStr, weekdays, weekdayMon0 } from '@/shared/lib/date'
+import { daysInMonth, toDateStr, weekdayMon0, weekdays } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import { DrinkIcon } from './DrinkIcon'
 
@@ -13,28 +13,22 @@ interface Props {
   refreshKey: number
 }
 
-export function CalendarPage({
-  year,
-  month,
-  onYearMonth,
-  onSelectDay,
-  refreshKey,
-}: Props) {
+export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey }: Props) {
   const { locale, t } = useI18n()
   const [byDate, setByDate] = useState<Map<string, Drink[]>>(new Map())
   const [soberDates, setSoberDates] = useState<Set<string>>(new Set())
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     let cancelled = false
-    Promise.all([
-      getDatesWithDrinks(year, month),
-      getSoberDatesInMonth(year, month),
-    ]).then(([map, sober]) => {
-      if (!cancelled) {
-        setByDate(map)
-        setSoberDates(sober)
-      }
-    })
+    Promise.all([getDatesWithDrinks(year, month), getSoberDatesInMonth(year, month)]).then(
+      ([map, sober]) => {
+        if (!cancelled) {
+          setByDate(map)
+          setSoberDates(sober)
+        }
+      },
+    )
     return () => {
       cancelled = true
     }
@@ -51,16 +45,21 @@ export function CalendarPage({
 
   const totalDays = daysInMonth(year, month)
   const firstWeekday = weekdayMon0(toDateStr(year, month, 1))
-  const cells: (number | null)[] = []
-  for (let i = 0; i < firstWeekday; i++) cells.push(null)
+  const cells: (number | string)[] = []
+  for (let i = 0; i < firstWeekday; i++) cells.push(`empty-${i}`)
   for (let d = 1; d <= totalDays; d++) cells.push(d)
-  while (cells.length % 7 !== 0) cells.push(null)
+  while (cells.length % 7 !== 0) cells.push(`empty-${cells.length}`)
 
   return (
     <div className="page calendar-page">
       <div className="calendar-card">
         <div className="month-nav">
-          <button type="button" className="nav-arrow" onClick={prev} aria-label={t('previousMonth')}>
+          <button
+            type="button"
+            className="nav-arrow"
+            onClick={prev}
+            aria-label={t('previousMonth')}
+          >
             ‹
           </button>
           <input
@@ -87,17 +86,14 @@ export function CalendarPage({
         </div>
 
         <div className="days-grid">
-          {cells.map((day, idx) => {
-            if (day == null) {
-              return <div key={`e-${idx}`} className="day-cell empty-slot" />
+          {cells.map((cell) => {
+            if (typeof cell === 'string') {
+              return <div key={cell} className="day-cell empty-slot" />
             }
+            const day = cell
             const date = toDateStr(year, month, day)
             const drinks = byDate.get(date) ?? []
-            const visual = drinks.length > 0
-              ? 'drinks'
-              : soberDates.has(date)
-                ? 'sober'
-                : 'blank'
+            const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
             return (
               <button
                 key={date}
@@ -106,11 +102,7 @@ export function CalendarPage({
                 onClick={() => onSelectDay(date)}
               >
                 {visual === 'drinks' && (
-                  <DrinkIcon
-                    stack={drinks}
-                    alcohol={drinks[0]?.alcohol}
-                    size="sm"
-                  />
+                  <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
                 )}
                 {visual === 'sober' && <DrinkIcon empty size="sm" />}
                 {visual === 'blank' && <span className="day-icon-spacer" />}

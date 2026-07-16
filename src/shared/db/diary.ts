@@ -1,11 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Drink, SoberDay } from '@/shared/api/diary'
 import { notifyLocalDataChange } from '@/shared/lib/dataChanges'
-import {
-  makeSyncQueueItem,
-  type SyncEntity,
-  type SyncQueueItem,
-} from './syncQueue'
+import { makeSyncQueueItem, type SyncEntity, type SyncQueueItem } from './syncQueue'
 
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>
@@ -85,14 +81,8 @@ export async function getDrinksByDate(date: string): Promise<Drink[]> {
   return rows.filter(aliveDrink)
 }
 
-export async function getDrinksInRange(
-  from: string,
-  to: string,
-): Promise<Drink[]> {
-  const rows = await db.drinks
-    .where('date')
-    .between(from, to, true, true)
-    .toArray()
+export async function getDrinksInRange(from: string, to: string): Promise<Drink[]> {
+  const rows = await db.drinks.where('date').between(from, to, true, true).toArray()
   return rows.filter(aliveDrink)
 }
 
@@ -118,17 +108,11 @@ export async function getDatesWithDrinks(
   return map
 }
 
-export async function getSoberDatesInMonth(
-  year: number,
-  month: number,
-): Promise<Set<string>> {
+export async function getSoberDatesInMonth(year: number, month: number): Promise<Set<string>> {
   const mm = String(month).padStart(2, '0')
   const from = `${year}-${mm}-01`
   const to = `${year}-${mm}-31`
-  const rows = await db.soberDays
-    .where('date')
-    .between(from, to, true, true)
-    .toArray()
+  const rows = await db.soberDays.where('date').between(from, to, true, true).toArray()
   return new Set(rows.filter(aliveSober).map((r) => r.date))
 }
 
@@ -141,9 +125,7 @@ export async function isSoberDay(date: string): Promise<boolean> {
   return !!row && aliveSober(row)
 }
 
-export async function markSoberDay(
-  date: string,
-): Promise<void> {
+export async function markSoberDay(date: string): Promise<void> {
   const now = Date.now()
   const existing = await db.soberDays.get(date)
   const row: SoberDay = {
@@ -247,9 +229,7 @@ export async function bulkPutDrinks(drinks: Drink[]): Promise<void> {
   }))
   await db.transaction('rw', db.drinks, db.syncQueue, async () => {
     await db.drinks.bulkPut(normalized)
-    await db.syncQueue.bulkPut(
-      normalized.map((d) => makeSyncQueueItem('drink', d.id, d.updatedAt)),
-    )
+    await db.syncQueue.bulkPut(normalized.map((d) => makeSyncQueueItem('drink', d.id, d.updatedAt)))
   })
   notifyLocalDataChange()
 }
@@ -295,13 +275,5 @@ export function drinkMergeKey(d: {
   price: number | null
   notes: string
 }): string {
-  return [
-    d.date,
-    d.drinkIndex,
-    d.alcohol,
-    d.amount,
-    d.abv ?? '',
-    d.price ?? '',
-    d.notes,
-  ].join('|')
+  return [d.date, d.drinkIndex, d.alcohol, d.amount, d.abv ?? '', d.price ?? '', d.notes].join('|')
 }

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 import { fullSync, onSyncStatus, type SyncStatus } from '@/features/cloud-sync'
 import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 import { useI18n } from '@/shared/lib/i18n'
@@ -44,7 +44,7 @@ export function CloudAuth({ onSynced }: Props) {
         setSyncMsg({ type: 'error', error: r.error })
       }
     })
-  }, [session?.user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session, onSynced])
 
   if (!configured) {
     return (
@@ -58,7 +58,7 @@ export function CloudAuth({ onSynced }: Props) {
           , {t('cloudSetup')} <code>supabase/schema.sql</code>, {t('cloudBuild')}
         </p>
         <pre className="env-pre">
-{`VITE_SUPABASE_URL=https://xxxx.supabase.co
+          {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
         <p className="muted">
@@ -147,9 +147,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
   return (
     <section className="settings-block">
       <h2>{t('cloud')}</h2>
-      <p className="muted">
-        {t('cloudDescription')}
-      </p>
+      <p className="muted">{t('cloudDescription')}</p>
 
       {user ? (
         <>

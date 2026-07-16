@@ -1,10 +1,5 @@
 import type { Drink } from '@/shared/api/diary'
-import {
-  bulkPutDrinks,
-  clearAllDrinks,
-  drinkMergeKey,
-  getAllDrinks,
-} from '@/shared/db/diary'
+import { bulkPutDrinks, clearAllDrinks, drinkMergeKey, getAllDrinks } from '@/shared/db/diary'
 import { parseNumber, toMl } from '@/shared/lib/volume'
 import type { ImportMode, ImportResult, ImportRow } from '../model/import'
 
@@ -17,7 +12,10 @@ function uuid(): string {
 
 /** Minimal CSV parser: handles quotes and commas inside quotes */
 export function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l.trim())
+  const lines = text
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .filter((l) => l.trim())
   if (lines.length < 2) return []
 
   const headers = splitCsvLine(lines[0]).map((h) => h.trim())
@@ -115,11 +113,7 @@ export function importRowToDrink(row: ImportRow, now: number): Drink | null {
   }
 }
 
-function buildDate(
-  y: unknown,
-  m: unknown,
-  d: unknown,
-): string | null {
+function buildDate(y: unknown, m: unknown, d: unknown): string | null {
   const year = parseNumber(y)
   const month = parseNumber(m)
   const day = parseNumber(d)
@@ -127,10 +121,7 @@ function buildDate(
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-export async function importDrinks(
-  rows: ImportRow[],
-  mode: ImportMode,
-): Promise<ImportResult> {
+export async function importDrinks(rows: ImportRow[], mode: ImportMode): Promise<ImportResult> {
   const now = Date.now()
   const parsed: Drink[] = []
   let invalid = 0

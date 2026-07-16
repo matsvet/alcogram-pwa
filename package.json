@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:write": "biome check --write .",
     "check:sync": "node --experimental-strip-types src/shared/db/syncQueue.check.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.6",
@@ -19,11 +23,12 @@
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
-    "oxlint": "^1.71.0",
+    "husky": "^9.1.7",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

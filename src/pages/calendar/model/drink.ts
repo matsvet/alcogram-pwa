@@ -4,7 +4,9 @@ import { toMl } from '@/shared/lib/volume'
 export const UNITS = ['ml', 'l', 'oz', 'cl'] as const
 export const CURRENCIES = ['₽', '$', '€', '£'] as const
 
-export function createManualDrink(partial: Omit<Drink, 'id' | 'amountMl' | 'createdAt' | 'updatedAt' | 'source' | 'deleted'>): Drink {
+export function createManualDrink(
+  partial: Omit<Drink, 'id' | 'amountMl' | 'createdAt' | 'updatedAt' | 'source' | 'deleted'>,
+): Drink {
   const now = Date.now()
   return {
     ...partial,

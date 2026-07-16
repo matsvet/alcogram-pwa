@@ -28,7 +28,10 @@ const MONTHS_RU = [
   'Декабрь',
 ]
 
-const WEEKDAYS = { en: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'], ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] }
+const WEEKDAYS = {
+  en: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+  ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+}
 
 export function weekdays(locale: 'en' | 'ru'): string[] {
   return WEEKDAYS[locale]

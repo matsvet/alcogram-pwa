@@ -1,13 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { countDrinks, getAllDrinks } from '@/shared/db/diary'
-import {
-  drinksToCsv,
-  importDrinks,
-  parseImportFile,
-} from '../lib/importExport'
+import { useI18n } from '@/shared/lib/i18n'
+import { drinksToCsv, importDrinks, parseImportFile } from '../lib/importExport'
 import type { ImportMode, ImportResult } from '../model/import'
 import { CloudAuth } from './CloudAuth'
-import { useI18n } from '@/shared/lib/i18n'
 
 const APP_VERSION = '1.1.0'
 
@@ -25,6 +21,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     countDrinks().then(setCount)
   }, [refreshKey])
@@ -93,9 +90,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
 
         <section className="settings-block">
           <h2>{t('importFile')}</h2>
-          <p className="muted">
-            {t('importDescription')}
-          </p>
+          <p className="muted">{t('importDescription')}</p>
           <div className="mode-row">
             <label>
               <input
@@ -148,9 +143,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
 
         <section className="settings-block">
           <h2>{t('installPwa')}</h2>
-          <p className="muted">
-            {t('installDescription')}
-          </p>
+          <p className="muted">{t('installDescription')}</p>
         </section>
       </div>
     </div>
