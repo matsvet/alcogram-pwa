@@ -4,7 +4,8 @@ import { getDrinksByDate, isSoberDay, markSoberDay, unmarkSoberDay } from '@/sha
 import { formatDayTitle } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import { formatPrice, formatVolume } from '@/shared/lib/volume'
-import { Modal } from '@/shared/ui/Modal'
+import { Modal } from '@/shared/ui'
+import styles from './DayModal.module.css'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -62,26 +63,26 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
 
   return (
     <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
-      <div className="day-drinks">
-        {statusText && <p className="muted center day-status">{statusText}</p>}
+      <div className={styles.root}>
+        {statusText && <p className={styles.status}>{statusText}</p>}
 
-        <div className="drink-cards">
+        <div className={styles.cards}>
           {drinks.map((d) => (
-            <button key={d.id} type="button" className="drink-card" onClick={() => onOpenDrink(d)}>
+            <button key={d.id} type="button" className={styles.card} onClick={() => onOpenDrink(d)}>
               <DrinkIcon alcohol={d.alcohol} size="lg" />
-              <div className="drink-card-meta">
-                <span className="vol">{formatVolume(d.amount, d.unit)}</span>
+              <div className={styles.cardMeta}>
+                <span>{formatVolume(d.amount, d.unit)}</span>
                 {d.price != null && (
-                  <span className="price">{formatPrice(d.price, d.currency)}</span>
+                  <span className={styles.price}>{formatPrice(d.price, d.currency)}</span>
                 )}
               </div>
             </button>
           ))}
           {!hasDrinks && showsAsSober && (
-            <div className="drink-card sober-preview">
+            <div className={`${styles.card} ${styles.soberPreview}`}>
               <DrinkIcon empty size="lg" />
-              <div className="drink-card-meta">
-                <span className="vol">{t('didNotDrink')}</span>
+              <div className={styles.cardMeta}>
+                <span>{t('didNotDrink')}</span>
               </div>
             </div>
           )}
@@ -90,7 +91,7 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!hasDrinks && !manualSober && (
           <button
             type="button"
-            className="btn-sober"
+            className={styles.soberButton}
             disabled={busy}
             onClick={() => void markSober()}
           >
@@ -100,15 +101,14 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!hasDrinks && manualSober && (
           <button
             type="button"
-            className="btn-secondary"
-            style={{ width: '100%' }}
+            className={styles.secondaryButton}
             disabled={busy}
             onClick={() => void clearSober()}
           >
             {t('clearSober')}
           </button>
         )}
-        <button type="button" className="btn-primary" onClick={() => onOpenDrink(null)}>
+        <button type="button" className={styles.primaryButton} onClick={() => onOpenDrink(null)}>
           {t('addDrink')}
         </button>
       </div>

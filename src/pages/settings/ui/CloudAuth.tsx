@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { fullSync, onSyncStatus, type SyncStatus } from '@/features/cloud-sync'
 import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 import { useI18n } from '@/shared/lib/i18n'
+import styles from './CloudAuth.module.css'
 
 interface Props {
   onSynced: () => void
@@ -48,20 +49,20 @@ export function CloudAuth({ onSynced }: Props) {
 
   if (!configured) {
     return (
-      <section className="settings-block">
+      <section className={styles.section}>
         <h2>{t('cloud')}</h2>
-        <p className="muted">
+        <p className={styles.muted}>
           {t('cloudNotConfigured')}{' '}
-          <a href="https://supabase.com" target="_blank" rel="noreferrer">
+          <a className={styles.link} href="https://supabase.com" target="_blank" rel="noreferrer">
             supabase.com
           </a>
           , {t('cloudSetup')} <code>supabase/schema.sql</code>, {t('cloudBuild')}
         </p>
-        <pre className="env-pre">
+        <pre className={styles.environment}>
           {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
-        <p className="muted">
+        <p className={styles.muted}>
           {t('cloudLocal')} <code>.env.local</code>. {t('cloudPages')}
         </p>
       </section>
@@ -145,19 +146,19 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
   }
 
   return (
-    <section className="settings-block">
+    <section className={styles.section}>
       <h2>{t('cloud')}</h2>
-      <p className="muted">{t('cloudDescription')}</p>
+      <p className={styles.muted}>{t('cloudDescription')}</p>
 
       {user ? (
         <>
           <p>
             {t('signedInAs')} <strong>{user.email}</strong>
           </p>
-          <div className="btn-row" style={{ marginTop: 8 }}>
+          <div className={styles.buttonRow}>
             <button
               type="button"
-              className="btn-secondary"
+              className={styles.secondaryButton}
               disabled={busy}
               onClick={() => void syncNow()}
             >
@@ -165,7 +166,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             </button>
             <button
               type="button"
-              className="btn-danger"
+              className={styles.dangerButton}
               disabled={busy}
               onClick={() => void logout()}
             >
@@ -173,31 +174,31 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             </button>
           </div>
           {syncMsg && (
-            <div className={typeof syncMsg === 'object' ? 'import-error' : 'import-result'}>
+            <div className={typeof syncMsg === 'object' ? styles.error : styles.result}>
               {typeof syncMsg === 'object' ? `${t('syncError')} ${syncMsg.error}` : t(syncMsg)}
             </div>
           )}
         </>
       ) : (
         <>
-          <div className="period-tabs" style={{ marginBottom: 12 }}>
+          <div className={styles.tabs}>
             <button
               type="button"
-              className={mode === 'login' ? 'active' : ''}
+              className={`${styles.tab} ${mode === 'login' ? styles.isActive : ''}`}
               onClick={() => setMode('login')}
             >
               {t('signIn')}
             </button>
             <button
               type="button"
-              className={mode === 'signup' ? 'active' : ''}
+              className={`${styles.tab} ${mode === 'signup' ? styles.isActive : ''}`}
               onClick={() => setMode('signup')}
             >
               {t('signUp')}
             </button>
           </div>
           <input
-            className="field"
+            className={styles.field}
             type="email"
             autoComplete="email"
             placeholder="Email"
@@ -205,8 +206,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="field"
-            style={{ marginTop: 8 }}
+            className={styles.field}
             type="password"
             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             placeholder={t('password')}
@@ -215,8 +215,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           />
           <button
             type="button"
-            className="btn-primary"
-            style={{ marginTop: 12 }}
+            className={styles.primaryButton}
             disabled={busy}
             onClick={() => void submit()}
           >
@@ -224,8 +223,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           </button>
           <button
             type="button"
-            className="btn-secondary"
-            style={{ marginTop: 8, width: '100%' }}
+            className={styles.googleButton}
             disabled={busy}
             onClick={() => void loginWithGoogle()}
           >
@@ -234,8 +232,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
         </>
       )}
 
-      {msg && <div className="import-result">{msg}</div>}
-      {err && <div className="import-error">{err}</div>}
+      {msg && <div className={styles.result}>{msg}</div>}
+      {err && <div className={styles.error}>{err}</div>}
     </section>
   )
 }

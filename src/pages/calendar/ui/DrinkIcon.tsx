@@ -1,4 +1,5 @@
 import type { AlcoholType, Drink } from '@/shared/api/diary'
+import styles from './DrinkIcon.module.css'
 
 type Size = 'sm' | 'md' | 'lg'
 
@@ -38,9 +39,9 @@ export function DrinkIcon({ alcohol, empty, size = 'md', stack }: Props) {
   if (stack && stack.length > 1) {
     const shown = stack.slice(0, 3)
     return (
-      <span className={`drink-stack size-${size}`}>
+      <span className={styles.stack}>
         {shown.map((d, i) => (
-          <span key={d.id} className="drink-stack-item" style={{ zIndex: shown.length - i }}>
+          <span key={d.id} className={styles.stackItem} style={{ zIndex: shown.length - i }}>
             <SingleIcon alcohol={d.alcohol} size={size} />
           </span>
         ))}
@@ -68,7 +69,7 @@ function SingleIcon({
 
   if (k === 'empty') {
     return (
-      <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon empty" aria-hidden>
+      <svg width={px} height={px} viewBox="0 0 40 48" aria-hidden>
         <title>Пустой бокал</title>
         <path
           d="M12 6h16l-1.5 28a6 6 0 0 1-6 5.5h-1a6 6 0 0 1-6-5.5L12 6z"
@@ -83,7 +84,7 @@ function SingleIcon({
 
   if (k === 'beer') {
     return (
-      <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon beer" aria-hidden>
+      <svg width={px} height={px} viewBox="0 0 40 48" aria-hidden>
         <title>Пиво</title>
         <path
           d="M10 8h16l-1 30a7 7 0 0 1-7 6.5h0a7 7 0 0 1-7-6.5L10 8z"
@@ -105,7 +106,7 @@ function SingleIcon({
 
   if (k === 'wine') {
     return (
-      <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon wine" aria-hidden>
+      <svg width={px} height={px} viewBox="0 0 40 48" aria-hidden>
         <title>Вино</title>
         <path
           d="M12 6h16c0 8-4 14-8 16v12h4v3H16v-3h4V22c-4-2-8-8-8-16z"
@@ -120,7 +121,7 @@ function SingleIcon({
 
   // spirit / shot
   return (
-    <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon spirit" aria-hidden>
+    <svg width={px} height={px} viewBox="0 0 40 48" aria-hidden>
       <title>Крепкий алкоголь</title>
       <path
         d="M14 8h12l-2 28a5 5 0 0 1-5 4.5h0a5 5 0 0 1-5-4.5L14 8z"

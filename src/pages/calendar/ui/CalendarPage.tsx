@@ -3,6 +3,8 @@ import type { Drink } from '@/shared/api/diary'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '@/shared/db/diary'
 import { daysInMonth, toDateStr, weekdayMon0, weekdays } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
+import { PageCard } from '@/shared/ui'
+import styles from './CalendarPage.module.css'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -51,12 +53,12 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
   while (cells.length % 7 !== 0) cells.push(`empty-${cells.length}`)
 
   return (
-    <div className="page calendar-page">
-      <div className="calendar-card">
-        <div className="month-nav">
+    <div className={styles.root}>
+      <PageCard>
+        <div className={styles.monthNavigation}>
           <button
             type="button"
-            className="nav-arrow"
+            className={styles.monthButton}
             onClick={prev}
             aria-label={t('previousMonth')}
           >
@@ -64,7 +66,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
           </button>
           <input
             type="month"
-            className="month-picker"
+            className={styles.monthPicker}
             value={`${year}-${String(month).padStart(2, '0')}`}
             onChange={(event) => {
               const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
@@ -72,23 +74,26 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
             }}
             aria-label={t('chooseMonth')}
           />
-          <button type="button" className="nav-arrow" onClick={next} aria-label={t('nextMonth')}>
+          <button
+            type="button"
+            className={styles.monthButton}
+            onClick={next}
+            aria-label={t('nextMonth')}
+          >
             ›
           </button>
         </div>
 
-        <div className="weekday-row">
+        <div className={styles.weekdays}>
           {weekdays(locale).map((w) => (
-            <div key={w} className="weekday">
-              {w}
-            </div>
+            <div key={w}>{w}</div>
           ))}
         </div>
 
-        <div className="days-grid">
+        <div className={styles.days}>
           {cells.map((cell) => {
             if (typeof cell === 'string') {
-              return <div key={cell} className="day-cell empty-slot" />
+              return <div key={cell} className={styles.emptySlot} />
             }
             const day = cell
             const date = toDateStr(year, month, day)
@@ -98,20 +103,20 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
               <button
                 key={date}
                 type="button"
-                className={`day-cell visual-${visual}`}
+                className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''}`}
                 onClick={() => onSelectDay(date)}
               >
                 {visual === 'drinks' && (
                   <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
                 )}
                 {visual === 'sober' && <DrinkIcon empty size="sm" />}
-                {visual === 'blank' && <span className="day-icon-spacer" />}
-                <span className="day-num">{day}</span>
+                {visual === 'blank' && <span className={styles.iconSpacer} />}
+                <span className={styles.dayNumber}>{day}</span>
               </button>
             )
           })}
         </div>
-      </div>
+      </PageCard>
     </div>
   )
 }

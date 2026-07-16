@@ -1,0 +1,16 @@
+@layer tokens {
+  :root {
+    --color-background: #e4e8ef;
+    --color-surface: #ffffff;
+    --color-primary: #6b7fe8;
+    --color-primary-active: #5568d4;
+    --color-text: #2c3e50;
+    --color-text-muted: #8a9ba8;
+    --color-border: #d0d8e4;
+    --color-danger: #e74c3c;
+    --color-nav-inactive: rgb(255 255 255 / 65%);
+    --shadow-card: 0 4px 24px rgb(80 100 140 / 12%);
+    --radius-card: 16px;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

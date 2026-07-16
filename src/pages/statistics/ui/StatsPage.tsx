@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
 import { monthName } from '@/shared/lib/date'
 import { alcoholName, useI18n } from '@/shared/lib/i18n'
+import { PageCard } from '@/shared/ui'
 import { computeStats, type PeriodStats, periodBounds } from '../model/statistics'
+import styles from './StatsPage.module.css'
 
 type Period = 'month' | 'year' | 'all'
 
@@ -40,77 +42,80 @@ export function StatsPage({ year, month, refreshKey }: Props) {
   const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
 
   return (
-    <div className="page stats-page">
-      <div className="stats-card">
-        <h1>{t('statistics')}</h1>
+    <div className={styles.root}>
+      <PageCard>
+        <h1 className={styles.title}>{t('statistics')}</h1>
 
-        <div className="period-tabs">
+        <div className={styles.tabs}>
           {(['month', 'year', 'all'] as Period[]).map((p) => (
             <button
               key={p}
               type="button"
-              className={period === p ? 'active' : ''}
+              className={`${styles.tab} ${period === p ? styles.isActive : ''}`}
               onClick={() => setPeriod(p)}
             >
               {p === 'month' ? t('month') : p === 'year' ? t('year') : t('all')}
             </button>
           ))}
         </div>
-        <p className="period-label">{label}</p>
+        <p className={styles.periodLabel}>{label}</p>
 
         {!stats || stats.totalDrinks === 0 ? (
-          <p className="muted center">{t('noPeriodData')}</p>
+          <p className={styles.emptyState}>{t('noPeriodData')}</p>
         ) : (
           <>
-            <div className="stat-grid">
-              <div className="stat-box">
-                <div className="stat-value">
+            <div className={styles.grid}>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>
                   {stats.totalEthanolMl > 0
                     ? `${(stats.totalEthanolMl / 1000).toFixed(2)} ${locale === 'ru' ? 'л' : 'l'}`
                     : '—'}
                 </div>
-                <div className="stat-name">{t('ethanol')}</div>
+                <div className={styles.statName}>{t('ethanol')}</div>
                 {!stats.totalEthanolKnown && stats.totalEthanolMl > 0 && (
-                  <div className="stat-hint">{t('missingAbv')}</div>
+                  <div className={styles.statHint}>{t('missingAbv')}</div>
                 )}
               </div>
-              <div className="stat-box">
-                <div className="stat-value">
+              <div className={styles.stat}>
+                <div className={styles.statValue}>
                   {Object.keys(stats.currencies).length === 0
                     ? '—'
                     : Object.entries(stats.currencies)
                         .map(([c, v]) => `${Math.round(v)} ${c}`)
                         .join(', ')}
                 </div>
-                <div className="stat-name">{t('spent')}</div>
+                <div className={styles.statName}>{t('spent')}</div>
               </div>
-              <div className="stat-box">
-                <div className="stat-value">{stats.drinkingDays}</div>
-                <div className="stat-name">{t('drinkingDays')}</div>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>{stats.drinkingDays}</div>
+                <div className={styles.statName}>{t('drinkingDays')}</div>
               </div>
-              <div className="stat-box">
-                <div className="stat-value">{stats.totalDrinks}</div>
-                <div className="stat-name">{t('drinks')}</div>
+              <div className={styles.stat}>
+                <div className={styles.statValue}>{stats.totalDrinks}</div>
+                <div className={styles.statName}>{t('drinks')}</div>
               </div>
             </div>
 
-            <h2 className="section-title">{t('topTypes')}</h2>
-            <div className="top-list">
+            <h2 className={styles.sectionTitle}>{t('topTypes')}</h2>
+            <div className={styles.topList}>
               {stats.topTypes.map((t) => (
-                <div key={t.alcohol} className="top-row">
-                  <div className="top-label">
+                <div key={t.alcohol} className={styles.topRow}>
+                  <div className={styles.topLabel}>
                     <span>{alcoholName(t.alcohol, locale)}</span>
-                    <span className="muted">{t.count}×</span>
+                    <span className={styles.muted}>{t.count}×</span>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill" style={{ width: `${(t.count / maxCount) * 100}%` }} />
+                  <div className={styles.barTrack}>
+                    <div
+                      className={styles.barFill}
+                      style={{ width: `${(t.count / maxCount) * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </>
         )}
-      </div>
+      </PageCard>
     </div>
   )
 }

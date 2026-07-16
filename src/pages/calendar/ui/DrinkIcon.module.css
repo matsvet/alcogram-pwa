@@ -1,0 +1,14 @@
+.stack {
+  position: relative;
+  display: inline-flex;
+  height: 28px;
+}
+
+.stackItem {
+  position: relative;
+  margin-left: -10px;
+}
+
+.stackItem:first-child {
+  margin-left: 0;
+}

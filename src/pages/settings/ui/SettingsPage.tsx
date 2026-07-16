@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { countDrinks, getAllDrinks } from '@/shared/db/diary'
 import { useI18n } from '@/shared/lib/i18n'
+import { PageCard } from '@/shared/ui'
 import { drinksToCsv, importDrinks, parseImportFile } from '../lib/importExport'
 import type { ImportMode, ImportResult } from '../model/import'
 import { CloudAuth } from './CloudAuth'
+import styles from './SettingsPage.module.css'
 
 const APP_VERSION = '1.1.0'
 
@@ -58,15 +60,15 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   }
 
   return (
-    <div className="page settings-page">
-      <div className="settings-card">
-        <h1>{t('settings')}</h1>
+    <div className={styles.root}>
+      <PageCard>
+        <h1 className={styles.title}>{t('settings')}</h1>
 
-        <section className="settings-block">
+        <section className={styles.section}>
           <label>
             {t('language')}
             <select
-              className="field"
+              className={styles.field}
               value={locale}
               onChange={(event) => setLocale(event.target.value as 'en' | 'ru')}
             >
@@ -78,20 +80,20 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
 
         <CloudAuth onSynced={onDataChange} />
 
-        <section className="settings-block">
+        <section className={styles.section}>
           <h2>{t('deviceData')}</h2>
           <p>
             {t('recordsInDb')} <strong>{count}</strong>
           </p>
-          <p className="muted">
+          <p className={styles.muted}>
             {t('version')} {APP_VERSION} · {t('optionalSupabase')}
           </p>
         </section>
 
-        <section className="settings-block">
+        <section className={styles.section}>
           <h2>{t('importFile')}</h2>
-          <p className="muted">{t('importDescription')}</p>
-          <div className="mode-row">
+          <p className={styles.muted}>{t('importDescription')}</p>
+          <div className={styles.modeRow}>
             <label>
               <input
                 type="radio"
@@ -115,37 +117,41 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
             ref={fileRef}
             type="file"
             accept=".csv,.json,text/csv,application/json"
-            className="file-input"
+            className={styles.fileInput}
             disabled={busy}
             onChange={(e) => {
               const f = e.target.files?.[0]
               if (f) void onFile(f)
             }}
           />
-          {busy && <p className="muted">{t('importing')}</p>}
+          {busy && <p className={styles.muted}>{t('importing')}</p>}
           {result && (
-            <div className="import-result">
+            <div className={styles.result}>
               {t('added')} {result.added}, {t('skipped')} {result.skipped}, {t('invalid')}{' '}
               {result.invalid} ({t('from')} {result.total})
             </div>
           )}
-          {error && <div className="import-error">{error}</div>}
+          {error && <div className={styles.error}>{error}</div>}
         </section>
 
-        <section className="settings-block">
+        <section className={styles.section}>
           <h2>{t('export')}</h2>
-          <div className="btn-row">
-            <button type="button" className="btn-secondary" onClick={() => void exportCsv()}>
+          <div className={styles.buttonRow}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => void exportCsv()}
+            >
               {t('exportCsv')}
             </button>
           </div>
         </section>
 
-        <section className="settings-block">
+        <section className={styles.section}>
           <h2>{t('installPwa')}</h2>
-          <p className="muted">{t('installDescription')}</p>
+          <p className={styles.muted}>{t('installDescription')}</p>
         </section>
-      </div>
+      </PageCard>
     </div>
   )
 }
