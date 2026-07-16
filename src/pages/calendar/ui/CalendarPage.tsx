@@ -101,6 +101,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
               }
               const day = cell
               const date = toDateStr(year, month, day)
+              const isFuture = date > today
               const drinks = byDate.get(date) ?? []
               const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
               return (
@@ -109,6 +110,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
                   type="button"
                   className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''} ${date === today ? styles.isToday : ''}`}
                   onClick={() => onSelectDay(date)}
+                  disabled={isFuture}
                 >
                   {visual === 'drinks' && (
                     <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
