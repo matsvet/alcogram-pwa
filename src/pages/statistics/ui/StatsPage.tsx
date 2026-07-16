@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
+import {
+  getAllDrinks,
+  getAllSoberDates,
+  getDrinksInRange,
+  getSoberDatesInRange,
+} from '@/shared/db/diary'
 import { useI18n } from '@/shared/lib/i18n'
 import { PageCard } from '@/shared/ui'
 import { computeStats, type Period, type PeriodStats, periodBounds } from '../model/statistics'
@@ -25,8 +30,13 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
     let cancelled = false
     ;(async () => {
       const bounds = periodBounds(period, year, month)
-      const drinks = bounds ? await getDrinksInRange(bounds.from, bounds.to) : await getAllDrinks()
-      if (!cancelled) setStats(computeStats(drinks))
+      const [drinks, soberDates] = bounds
+        ? await Promise.all([
+            getDrinksInRange(bounds.from, bounds.to),
+            getSoberDatesInRange(bounds.from, bounds.to),
+          ])
+        : await Promise.all([getAllDrinks(), getAllSoberDates()])
+      if (!cancelled) setStats(computeStats(drinks, soberDates))
     })()
     return () => {
       cancelled = true
@@ -45,12 +55,12 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
           onYearMonth={onYearMonth}
         />
 
-        {!stats || stats.totalDrinks === 0 ? (
+        {!stats || (stats.totalDrinks === 0 && stats.longestSoberStreak === 0) ? (
           <p className={styles.emptyState}>{t('noPeriodData')}</p>
         ) : (
           <>
             <StatsSummary stats={stats} period={period} year={year} month={month} />
-            <TopTypes topTypes={stats.topTypes} />
+            {stats.totalDrinks > 0 && <TopTypes topTypes={stats.topTypes} />}
           </>
         )}
       </PageCard>

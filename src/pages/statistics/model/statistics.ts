@@ -9,11 +9,13 @@ export interface PeriodStats {
   totalMoney: number
   currencies: Record<string, number>
   drinkingDays: number
+  longestDrinkingStreak: number
+  longestSoberStreak: number
   totalDrinks: number
   topTypes: { alcohol: string; count: number; ethanolMl: number; volumeMl: number }[]
 }
 
-export function computeStats(drinks: Drink[]): PeriodStats {
+export function computeStats(drinks: Drink[], soberDates: Iterable<string>): PeriodStats {
   let totalEthanolMl = 0
   let hasAnyEthanol = false
   let missingAbv = false
@@ -48,6 +50,7 @@ export function computeStats(drinks: Drink[]): PeriodStats {
     .sort((a, b) => b.count - a.count)
 
   const totalMoney = Object.values(currencies).reduce((a, b) => a + b, 0)
+  const confirmedSoberDates = [...new Set(soberDates)].filter((date) => !days.has(date))
 
   return {
     totalEthanolMl,
@@ -55,9 +58,28 @@ export function computeStats(drinks: Drink[]): PeriodStats {
     totalMoney,
     currencies,
     drinkingDays: days.size,
+    longestDrinkingStreak: longestStreak(days),
+    longestSoberStreak: longestStreak(confirmedSoberDates),
     totalDrinks: drinks.length,
     topTypes,
   }
+}
+
+function longestStreak(dates: Iterable<string>): number {
+  const sortedDates = [...new Set(dates)].sort()
+  let longest = 0
+  let current = 0
+  let previousDay: number | null = null
+
+  for (const date of sortedDates) {
+    const [year, month, day] = date.split('-').map(Number)
+    const currentDay = Date.UTC(year, month - 1, day) / 86_400_000
+    current = previousDay === currentDay - 1 ? current + 1 : 1
+    longest = Math.max(longest, current)
+    previousDay = currentDay
+  }
+
+  return longest
 }
 
 export function periodBounds(

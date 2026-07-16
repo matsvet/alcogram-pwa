@@ -24,7 +24,7 @@ export function TopTypes({ topTypes: sourceTopTypes }: Props) {
   })
 
   return (
-    <>
+    <section className={styles.root}>
       <div className={styles.header}>
         <h2 className={styles.title}>{t('topTypes')}</h2>
         <div className={styles.metricTabs}>
@@ -60,6 +60,6 @@ export function TopTypes({ topTypes: sourceTopTypes }: Props) {
           )
         })}
       </div>
-    </>
+    </section>
   )
 }

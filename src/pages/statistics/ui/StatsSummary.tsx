@@ -61,6 +61,14 @@ export function StatsSummary({ stats, period, year, month }: Props) {
         <div className={styles.statValue}>{stats.totalDrinks}</div>
         <div className={styles.statName}>{t('drinks')}</div>
       </div>
+      <div className={styles.stat}>
+        <div className={styles.statValue}>{stats.longestDrinkingStreak}</div>
+        <div className={styles.statName}>{t('longestDrinkingStreak')}</div>
+      </div>
+      <div className={styles.stat}>
+        <div className={styles.statValue}>{stats.longestSoberStreak}</div>
+        <div className={styles.statName}>{t('longestSoberStreak')}</div>
+      </div>
     </div>
   )
 }

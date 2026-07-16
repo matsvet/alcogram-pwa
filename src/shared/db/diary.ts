@@ -112,7 +112,16 @@ export async function getSoberDatesInMonth(year: number, month: number): Promise
   const mm = String(month).padStart(2, '0')
   const from = `${year}-${mm}-01`
   const to = `${year}-${mm}-31`
+  return getSoberDatesInRange(from, to)
+}
+
+export async function getSoberDatesInRange(from: string, to: string): Promise<Set<string>> {
   const rows = await db.soberDays.where('date').between(from, to, true, true).toArray()
+  return new Set(rows.filter(aliveSober).map((r) => r.date))
+}
+
+export async function getAllSoberDates(): Promise<Set<string>> {
+  const rows = await db.soberDays.toArray()
   return new Set(rows.filter(aliveSober).map((r) => r.date))
 }
 
