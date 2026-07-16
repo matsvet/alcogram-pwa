@@ -31,6 +31,7 @@ export function CloudAuth({ onSynced }: Props) {
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const [personalMigrationMsg, setPersonalMigrationMsg] = useState<string | null>(null)
   const personalMigrationStarted = useRef(false)
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export function CloudAuth({ onSynced }: Props) {
     if (!supabase) return
 
     personalMigrationStarted.current = true
-    setSyncMsg('Перенос отметок «не пил»…')
+    setPersonalMigrationMsg('Перенос отметок «не пил»…')
     void (async () => {
       const userId = session.user.id
       const [drinksResult, soberResult] = await Promise.all([
@@ -123,10 +124,10 @@ export function CloudAuth({ onSynced }: Props) {
         .gte('date', '2023-01-01')
         .lte('date', '2026-03-31')
       if (error) throw error
-      setSyncMsg(`Добавлено: ${rows.length}. Всего отметок: ${count ?? 0}`)
+      setPersonalMigrationMsg(`Добавлено: ${rows.length}. Всего отметок: ${count ?? 0}`)
       onSynced()
     })().catch((e) => {
-      setSyncMsg(`Ошибка переноса: ${e instanceof Error ? e.message : String(e)}`)
+      setPersonalMigrationMsg(`Ошибка переноса: ${e instanceof Error ? e.message : String(e)}`)
     })
   }, [session, onSynced])
 
@@ -262,6 +263,11 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           {syncMsg && (
             <div className={syncMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
               {syncMsg}
+            </div>
+          )}
+          {personalMigrationMsg && (
+            <div className={personalMigrationMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
+              {personalMigrationMsg}
             </div>
           )}
         </>
