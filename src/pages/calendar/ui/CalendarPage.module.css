@@ -100,9 +100,9 @@
 
 .todayButton {
   display: block;
-  width: 100%;
+  width: 40%;
   min-height: 40px;
-  margin-top: auto;
+  margin: auto auto 0;
   color: var(--color-primary);
   font-weight: 600;
   background: rgb(107 127 232 / 8%);
