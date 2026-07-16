@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { useI18n } from '@/shared/lib/i18n'
 
 interface Props {
   title: string
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function Modal({ title, onClose, children, leftAction }: Props) {
+  const { t } = useI18n()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -28,7 +30,7 @@ export function Modal({ title, onClose, children, leftAction }: Props) {
         <header className="modal-header">
           <div className="modal-left">{leftAction ?? <span />}</div>
           <h2 id="modal-title">{title}</h2>
-          <button type="button" className="icon-btn close" onClick={onClose} aria-label="Close">
+          <button type="button" className="icon-btn close" onClick={onClose} aria-label={t('close')}>
             ×
           </button>
         </header>

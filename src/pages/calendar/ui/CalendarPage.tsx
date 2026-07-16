@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '@/shared/api/diary'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '@/shared/db/diary'
-import { daysInMonth, toDateStr, WEEKDAYS, weekdayMon0 } from '@/shared/lib/date'
+import { daysInMonth, toDateStr, weekdays, weekdayMon0 } from '@/shared/lib/date'
+import { useI18n } from '@/shared/lib/i18n'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -19,6 +20,7 @@ export function CalendarPage({
   onSelectDay,
   refreshKey,
 }: Props) {
+  const { locale, t } = useI18n()
   const [byDate, setByDate] = useState<Map<string, Drink[]>>(new Map())
   const [soberDates, setSoberDates] = useState<Set<string>>(new Set())
 
@@ -58,7 +60,7 @@ export function CalendarPage({
     <div className="page calendar-page">
       <div className="calendar-card">
         <div className="month-nav">
-          <button type="button" className="nav-arrow" onClick={prev} aria-label="Previous month">
+          <button type="button" className="nav-arrow" onClick={prev} aria-label={t('previousMonth')}>
             ‹
           </button>
           <input
@@ -69,15 +71,15 @@ export function CalendarPage({
               const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
               onYearMonth(nextYear, nextMonth)
             }}
-            aria-label="Выбрать месяц и год"
+            aria-label={t('chooseMonth')}
           />
-          <button type="button" className="nav-arrow" onClick={next} aria-label="Next month">
+          <button type="button" className="nav-arrow" onClick={next} aria-label={t('nextMonth')}>
             ›
           </button>
         </div>
 
         <div className="weekday-row">
-          {WEEKDAYS.map((w) => (
+          {weekdays(locale).map((w) => (
             <div key={w} className="weekday">
               {w}
             </div>

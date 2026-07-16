@@ -3,6 +3,7 @@ import { ALCOHOL_TYPES, type AlcoholType, type Drink } from '@/shared/api/diary'
 import { deleteDrink, getDrinksByDate, putDrink } from '@/shared/db/diary'
 import { formatDayShort } from '@/shared/lib/date'
 import { toMl } from '@/shared/lib/volume'
+import { alcoholName, useI18n } from '@/shared/lib/i18n'
 import { Modal } from '@/shared/ui/Modal'
 import { CURRENCIES, createManualDrink, UNITS } from '../model/drink'
 import { DrinkIcon } from './DrinkIcon'
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
+  const { locale, t } = useI18n()
   const isEdit = !!drink
   const [alcohol, setAlcohol] = useState<AlcoholType>(drink?.alcohol ?? 'Beer')
   const [amount, setAmount] = useState(drink ? String(drink.amount) : '')
@@ -28,17 +30,17 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
   const save = async () => {
     const amountNum = Number(String(amount).replace(',', '.'))
     if (!alcohol.trim() || !Number.isFinite(amountNum) || amountNum <= 0) {
-      alert('Укажите тип и объём')
+      alert(t('requiredDrink'))
       return
     }
     const abvNum = abv.trim() === '' ? null : Number(String(abv).replace(',', '.'))
     const priceNum = price.trim() === '' ? null : Number(String(price).replace(',', '.'))
     if (abvNum != null && !Number.isFinite(abvNum)) {
-      alert('ABV должно быть числом')
+      alert(t('abvNumber'))
       return
     }
     if (priceNum != null && !Number.isFinite(priceNum)) {
-      alert('Цена должна быть числом')
+      alert(t('priceNumber'))
       return
     }
 
@@ -85,7 +87,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
 
   const remove = async () => {
     if (!drink) return
-    if (!confirm('Удалить запись?')) return
+    if (!confirm(t('deleteDrink'))) return
     setBusy(true)
     try {
       await deleteDrink(drink.id)
@@ -97,7 +99,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
 
   return (
     <Modal
-      title={isEdit ? 'Drink data' : 'Add drink'}
+      title={isEdit ? t('drinkData') : t('addDrink')}
       onClose={onClose}
       leftAction={
         isEdit ? (
@@ -105,7 +107,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
             type="button"
             className="icon-btn danger"
             onClick={remove}
-            aria-label="Delete"
+            aria-label={t('delete')}
             disabled={busy}
           >
             🗑
@@ -125,7 +127,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           >
             {ALCOHOL_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {alcoholName(t, locale)}
               </option>
             ))}
           </select>
@@ -136,7 +138,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
             <input
               className="field"
               inputMode="decimal"
-              placeholder="Volume"
+              placeholder={t('volume')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -165,7 +167,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
             <input
               className="field"
               inputMode="decimal"
-              placeholder="Expenses"
+              placeholder={t('expenses')}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
@@ -182,13 +184,13 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
             </select>
           </div>
           <div className="field-group">
-            <input className="field" value={formatDayShort(date)} readOnly />
+            <input className="field" value={formatDayShort(date, locale)} readOnly />
           </div>
         </div>
 
         <input
           className="field notes"
-          placeholder="Notes"
+          placeholder={t('notes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
@@ -199,7 +201,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           onClick={save}
           disabled={busy}
         >
-          SAVE
+          {t('save')}
         </button>
       </div>
     </Modal>

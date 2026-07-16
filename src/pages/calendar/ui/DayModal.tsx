@@ -8,6 +8,7 @@ import {
 } from '@/shared/db/diary'
 import { formatDayTitle } from '@/shared/lib/date'
 import { formatPrice, formatVolume } from '@/shared/lib/volume'
+import { useI18n } from '@/shared/lib/i18n'
 import { Modal } from '@/shared/ui/Modal'
 import { DrinkIcon } from './DrinkIcon'
 
@@ -26,6 +27,7 @@ export function DayModal({
   onChanged,
   refreshKey,
 }: Props) {
+  const { locale, t } = useI18n()
   const [drinks, setDrinks] = useState<Drink[]>([])
   const [manualSober, setManualSober] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -61,15 +63,15 @@ export function DayModal({
     }
   }
 
-  let statusText = 'Нет данных — день не заполнен'
+  let statusText = t('noDataDay')
   if (hasDrinks) {
     statusText = ''
   } else if (showsAsSober) {
-    statusText = 'Отмечено: не пил'
+    statusText = t('markedSober')
   }
 
   return (
-    <Modal title={formatDayTitle(date)} onClose={onClose}>
+    <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
       <div className="day-drinks">
         {statusText && <p className="muted center day-status">{statusText}</p>}
 
@@ -94,7 +96,7 @@ export function DayModal({
             <div className="drink-card sober-preview">
               <DrinkIcon empty size="lg" />
               <div className="drink-card-meta">
-                <span className="vol">не пил</span>
+                <span className="vol">{t('didNotDrink')}</span>
               </div>
             </div>
           )}
@@ -107,7 +109,7 @@ export function DayModal({
             disabled={busy}
             onClick={() => void markSober()}
           >
-            Не пил / сегодня не пью
+            {t('markSober')}
           </button>
         )}
         {!hasDrinks && manualSober && (
@@ -118,7 +120,7 @@ export function DayModal({
             disabled={busy}
             onClick={() => void clearSober()}
           >
-            Снять отметку «не пил»
+            {t('clearSober')}
           </button>
         )}
         <button
@@ -126,7 +128,7 @@ export function DayModal({
           className="btn-primary"
           onClick={() => onOpenDrink(null)}
         >
-          ADD DRINK
+          {t('addDrink')}
         </button>
       </div>
     </Modal>
