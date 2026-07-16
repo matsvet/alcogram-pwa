@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages: BASE_PATH=/alcogram-pwa/  |  Vercel/root: /
+// GitHub Pages: BASE_PATH=/alcogram-pwa/; root is used for local development.
 const base = process.env.BASE_PATH || '/'
 
 export default defineConfig({
@@ -11,7 +11,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/*.png', 'seed/*'],
+      includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'Alcogram Diary',
         short_name: 'Alcogram',
@@ -42,7 +42,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json,csv}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json}'],
       },
     }),
   ],

@@ -16,8 +16,8 @@ dist-ssr
 .env.*.local
 .vercel
 
-# Raw export (seed already in public/seed)
-real-data-alcogram-export-2023-01_to_2026-07/
+# Local personal backups
+/.local-backup/
 
 # Editor directories and files
 .vscode/*

@@ -235,15 +235,6 @@ export async function clearAllDrinks(): Promise<void> {
   notifyLocalDataChange()
 }
 
-/** Hard wipe local only. Does not soft-delete for sync. */
-export async function hardClearLocal(): Promise<void> {
-  await db.transaction('rw', db.drinks, db.soberDays, db.syncQueue, async () => {
-    await db.drinks.clear()
-    await db.soberDays.clear()
-    await db.syncQueue.clear()
-  })
-}
-
 export async function countDrinks(): Promise<number> {
   const all = await db.drinks.toArray()
   return all.filter(aliveDrink).length

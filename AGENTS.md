@@ -7,7 +7,7 @@ under `src/`: page-level UI belongs in `src/pages/`, reusable UI in
 `src/components/`, IndexedDB access in `src/db.ts`, and domain types in
 `src/types.ts`. Keep pure calculations and import helpers in `src/utils/`.
 Cloud configuration and synchronization live in `src/lib/supabase.ts` and
-`src/sync/`. Static files, seed data, and PWA icons are in `public/`.
+`src/sync/`. Static files and PWA icons are in `public/`.
 `supabase/schema.sql` defines the optional Supabase backend schema.
 
 ## Build, Test, and Development Commands
@@ -37,9 +37,9 @@ UI unless the task explicitly changes the product language.
 
 Copy `.env.example` to `.env.local` for local Supabase setup. Only expose the
 Supabase project URL and publishable/anon key through `VITE_` variables; never
-commit service-role credentials. Treat files under `public/seed/` and
-`public/sample-data/` as public deployment assets: do not place personal data
-there. Apply backend schema changes deliberately in `supabase/schema.sql`.
+commit service-role credentials. Do not place personal data under `public/`:
+it is deployed publicly. Apply backend schema changes deliberately in
+`supabase/schema.sql`.
 
 ## Commits & Pull Requests
 
