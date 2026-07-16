@@ -51,3 +51,7 @@ it is deployed publicly. Apply backend schema changes deliberately in
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for branch names, commit text, pull
 requests, and Feature-Sliced Design conventions.
+
+After completing work in a new branch, push it, create a draft pull request to
+`main` unless instructed otherwise, and include its direct GitHub link in the
+final response. Do this even when the user asks only to commit and push.
