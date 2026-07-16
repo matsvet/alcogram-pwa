@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '@/shared/api/diary'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '@/shared/db/diary'
-import { daysInMonth, toDateStr, weekdayMon0, weekdays } from '@/shared/lib/date'
+import { daysInMonth, toDateStr, todayStr, weekdayMon0, weekdays } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import { PageCard } from '@/shared/ui'
 import styles from './CalendarPage.module.css'
@@ -47,6 +47,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
 
   const totalDays = daysInMonth(year, month)
   const firstWeekday = weekdayMon0(toDateStr(year, month, 1))
+  const today = todayStr()
   const cells: (number | string)[] = []
   for (let i = 0; i < firstWeekday; i++) cells.push(`empty-${i}`)
   for (let d = 1; d <= totalDays; d++) cells.push(d)
@@ -103,7 +104,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
               <button
                 key={date}
                 type="button"
-                className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''}`}
+                className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''} ${date === today ? styles.isToday : ''}`}
                 onClick={() => onSelectDay(date)}
               >
                 {visual === 'drinks' && (
@@ -116,6 +117,17 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
             )
           })}
         </div>
+
+        <button
+          type="button"
+          className={styles.todayButton}
+          onClick={() => {
+            const date = new Date()
+            onYearMonth(date.getFullYear(), date.getMonth() + 1)
+          }}
+        >
+          {t('today')}
+        </button>
       </PageCard>
     </div>
   )
