@@ -115,9 +115,15 @@ export function CloudAuth({ onSynced }: Props) {
         if (error) throw error
       }
 
-      const syncResult = await fullSync()
-      if (!syncResult.ok) throw new Error(syncResult.error)
-      setSyncMsg(`Перенесено отметок «не пил»: ${rows.length}`)
+      const { count, error } = await supabase
+        .from('sober_days')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('deleted', false)
+        .gte('date', '2023-01-01')
+        .lte('date', '2026-03-31')
+      if (error) throw error
+      setSyncMsg(`Добавлено: ${rows.length}. Всего отметок: ${count ?? 0}`)
       onSynced()
     })().catch((e) => {
       setSyncMsg(`Ошибка переноса: ${e instanceof Error ? e.message : String(e)}`)
