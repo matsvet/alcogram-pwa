@@ -1,0 +1,64 @@
+.tabs {
+  display: flex;
+  padding: 3px;
+  margin-bottom: 8px;
+  background: #eef1f8;
+  border-radius: 10px;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+.isActive {
+  color: var(--color-primary);
+  font-weight: 600;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+}
+
+.periodLabel {
+  margin: 0 0 16px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.periodNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+
+.periodPicker {
+  width: 195px;
+  min-height: 40px;
+  padding: 6px 10px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.periodButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-primary);
+  font-size: 1.6rem;
+  border-radius: 50%;
+}
+
+.periodButton:active {
+  background: rgb(107 127 232 / 12%);
+}

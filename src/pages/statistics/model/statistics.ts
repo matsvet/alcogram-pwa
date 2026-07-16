@@ -1,6 +1,8 @@
 import type { Drink } from '@/shared/api/diary'
 import { ethanolMl } from '@/shared/lib/volume'
 
+export type Period = 'month' | 'year' | 'all'
+
 export interface PeriodStats {
   totalEthanolMl: number
   totalEthanolKnown: boolean
@@ -59,7 +61,7 @@ export function computeStats(drinks: Drink[]): PeriodStats {
 }
 
 export function periodBounds(
-  period: 'month' | 'year' | 'all',
+  period: Period,
   year: number,
   month: number,
 ): { from: string; to: string } | null {
