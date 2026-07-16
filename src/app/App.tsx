@@ -83,7 +83,17 @@ export default function App() {
             refreshKey={refreshKey}
           />
         )}
-        {tab === 'stats' && <StatsPage year={year} month={month} refreshKey={refreshKey} />}
+        {tab === 'stats' && (
+          <StatsPage
+            year={year}
+            month={month}
+            onYearMonth={(y, m) => {
+              setYear(y)
+              setMonth(m)
+            }}
+            refreshKey={refreshKey}
+          />
+        )}
         {tab === 'settings' && <SettingsPage refreshKey={refreshKey} onDataChange={bump} />}
       </main>
 

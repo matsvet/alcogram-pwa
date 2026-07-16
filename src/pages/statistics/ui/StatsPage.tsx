@@ -11,10 +11,11 @@ type Period = 'month' | 'year' | 'all'
 interface Props {
   year: number
   month: number
+  onYearMonth: (year: number, month: number) => void
   refreshKey: number
 }
 
-export function StatsPage({ year, month, refreshKey }: Props) {
+export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
   const { locale, t } = useI18n()
   const [period, setPeriod] = useState<Period>('month')
   const [stats, setStats] = useState<PeriodStats | null>(null)
@@ -41,6 +42,18 @@ export function StatsPage({ year, month, refreshKey }: Props) {
 
   const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
 
+  const previousPeriod = () => {
+    if (period === 'year') onYearMonth(year - 1, month)
+    else if (month === 1) onYearMonth(year - 1, 12)
+    else onYearMonth(year, month - 1)
+  }
+
+  const nextPeriod = () => {
+    if (period === 'year') onYearMonth(year + 1, month)
+    else if (month === 12) onYearMonth(year + 1, 1)
+    else onYearMonth(year, month + 1)
+  }
+
   return (
     <div className={styles.root}>
       <PageCard>
@@ -58,7 +71,52 @@ export function StatsPage({ year, month, refreshKey }: Props) {
             </button>
           ))}
         </div>
-        <p className={styles.periodLabel}>{label}</p>
+        {period === 'all' ? (
+          <p className={styles.periodLabel}>{label}</p>
+        ) : (
+          <div className={styles.periodNavigation}>
+            <button
+              type="button"
+              className={styles.periodButton}
+              onClick={previousPeriod}
+              aria-label={period === 'month' ? t('previousMonth') : t('previousYear')}
+            >
+              ‹
+            </button>
+            {period === 'month' ? (
+              <input
+                type="month"
+                className={styles.periodPicker}
+                value={`${year}-${String(month).padStart(2, '0')}`}
+                onChange={(event) => {
+                  const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
+                  onYearMonth(nextYear, nextMonth)
+                }}
+                aria-label={t('chooseMonth')}
+              />
+            ) : (
+              <input
+                type="number"
+                className={styles.periodPicker}
+                value={year}
+                min="1"
+                onChange={(event) => {
+                  const nextYear = Number(event.target.value)
+                  if (Number.isInteger(nextYear) && nextYear > 0) onYearMonth(nextYear, month)
+                }}
+                aria-label={t('chooseYear')}
+              />
+            )}
+            <button
+              type="button"
+              className={styles.periodButton}
+              onClick={nextPeriod}
+              aria-label={period === 'month' ? t('nextMonth') : t('nextYear')}
+            >
+              ›
+            </button>
+          </div>
+        )}
 
         {!stats || stats.totalDrinks === 0 ? (
           <p className={styles.emptyState}>{t('noPeriodData')}</p>
