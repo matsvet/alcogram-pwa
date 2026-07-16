@@ -70,7 +70,7 @@ export default function App() {
 
   return (
     <div className={styles.shell}>
-      <main className={styles.main}>
+      <main className={`${styles.main} ${tab === 'calendar' ? styles.calendarMain : ''}`}>
         {tab === 'calendar' && (
           <CalendarPage
             year={year}
