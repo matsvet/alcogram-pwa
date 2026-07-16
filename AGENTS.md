@@ -17,13 +17,17 @@ through their `index.ts` public API. Static files and PWA icons are in
 - `npm install`: install the locked dependencies from `package-lock.json`.
 - `npm run dev`: start the Vite development server.
 - `npm run lint`: run Biome linting over TypeScript and React code.
+- `npm run format`: format the codebase with Biome.
+- `npm run check`: run Biome linting, formatting, and import checks.
+- `npm run check:write`: apply safe Biome fixes across the codebase.
 - `npm run build`: type-check with `tsc -b` and create the production bundle.
 - `npm run preview`: serve the built bundle locally after `npm run build`.
 
-There is no automated test suite yet. At minimum, run `npm run lint` and
-`npm run build` before submitting changes, then exercise the changed flow in
-the browser. For IndexedDB or sync changes, verify create, edit, delete, and
-reload behavior; sync uses soft deletes and last-write-wins timestamps.
+There is no automated test suite yet. At minimum, run `npm run check` and
+`npm run build` before submitting changes; the pre-commit hook also runs
+`npm run check`. Then exercise the changed flow in the browser. For IndexedDB
+or sync changes, verify create, edit, delete, and reload behavior; sync uses
+soft deletes and last-write-wins timestamps.
 
 ## Coding Style & Naming Conventions
 
@@ -50,3 +54,15 @@ Supabase cloud sync for cross-device use`. Keep each commit focused. Pull
 requests should state the user-visible change, list validation commands, link
 the relevant issue when present, and include screenshots or a short recording
 for UI changes. Call out any required Supabase migration or environment change.
+
+When the user asks for a commit description, commit title, or commit text,
+reply in Russian using this structure: a concise summary on the first line,
+then a blank line and 2-4 short bullets that clarify the changes. Use a hyphen
+for each bullet.
+
+```text
+Краткое описание изменения
+
+- Первая важная деталь
+- Вторая важная деталь
+```
