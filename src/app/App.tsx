@@ -6,6 +6,7 @@ import { StatsPage } from '@/pages/statistics'
 import type { Drink } from '@/shared/api/diary'
 import { isCloudConfigured } from '@/shared/api/supabase'
 import { onLocalDataChange } from '@/shared/lib/dataChanges'
+import styles from './App.module.css'
 import type { TabId } from './model/navigation'
 import { BottomNav } from './ui/BottomNav'
 
@@ -68,8 +69,8 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      <main className="app-main">
+    <div className={styles.shell}>
+      <main className={styles.main}>
         {tab === 'calendar' && (
           <CalendarPage
             year={year}

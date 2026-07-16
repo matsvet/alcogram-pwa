@@ -1,5 +1,6 @@
 import { useI18n } from '@/shared/lib/i18n'
 import type { TabId } from '../model/navigation'
+import styles from './BottomNav.module.css'
 
 interface Props {
   tab: TabId
@@ -9,10 +10,10 @@ interface Props {
 export function BottomNav({ tab, onChange }: Props) {
   const { t } = useI18n()
   return (
-    <nav className="bottom-nav" aria-label={t('mainNavigation')}>
+    <nav className={styles.root} aria-label={t('mainNavigation')}>
       <button
         type="button"
-        className={tab === 'stats' ? 'active' : ''}
+        className={`${styles.item} ${tab === 'stats' ? styles.isActive : ''}`}
         onClick={() => onChange('stats')}
       >
         <StatsIcon />
@@ -20,7 +21,7 @@ export function BottomNav({ tab, onChange }: Props) {
       </button>
       <button
         type="button"
-        className={tab === 'calendar' ? 'active' : ''}
+        className={`${styles.item} ${tab === 'calendar' ? styles.isActive : ''}`}
         onClick={() => onChange('calendar')}
       >
         <CalendarIcon />
@@ -28,7 +29,7 @@ export function BottomNav({ tab, onChange }: Props) {
       </button>
       <button
         type="button"
-        className={tab === 'settings' ? 'active' : ''}
+        className={`${styles.item} ${tab === 'settings' ? styles.isActive : ''}`}
         onClick={() => onChange('settings')}
       >
         <SettingsIcon />

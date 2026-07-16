@@ -1,0 +1,7 @@
+.root {
+  min-height: calc(100vh - 100px);
+  padding: 16px 12px 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}

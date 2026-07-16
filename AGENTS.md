@@ -39,6 +39,28 @@ modules and functions (for example, `utils/date.ts`). Import types with
 `import type`. Keep browser-facing text consistent with the existing Russian
 UI unless the task explicitly changes the product language.
 
+### CSS Modules
+
+Use CSS Modules with native CSS for component and page styles. Keep each
+`Component.module.css` next to its `Component.tsx`; global CSS in `src/app/styles/`
+is limited to reset, design tokens, base element rules, and truly global
+animations.
+
+Apply BEM as a local naming principle, not as literal global class names:
+
+- The module file is the block. Use short semantic element names such as
+  `.root`, `.header`, `.actions`, and `.monthNavigation`, not
+  `.calendarPage__monthNavigation`.
+- Name modifiers and state predicates `.isActive`, `.isBlank`, `.hasError`,
+  and combine them explicitly in JSX.
+- Prefer a class on the element over descendant selectors. Use a descendant
+  selector only when the structural relationship is essential, and keep it
+  shallow.
+- Keep the class name about the UI role, not its appearance. Use
+  `.primaryAction`, not `.blueButton`.
+- Extract a shared UI component only after confirmed reuse; do not create a
+  global stylesheet of component classes.
+
 ## Configuration, Data, and Security
 
 Copy `.env.example` to `.env.local` for local Supabase setup. Only expose the

@@ -4,8 +4,9 @@ import { deleteDrink, getDrinksByDate, putDrink } from '@/shared/db/diary'
 import { formatDayShort } from '@/shared/lib/date'
 import { alcoholName, useI18n } from '@/shared/lib/i18n'
 import { toMl } from '@/shared/lib/volume'
-import { Modal } from '@/shared/ui/Modal'
+import { Modal } from '@/shared/ui'
 import { CURRENCIES, createManualDrink, UNITS } from '../model/drink'
+import styles from './DrinkForm.module.css'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -103,7 +104,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
         isEdit ? (
           <button
             type="button"
-            className="icon-btn danger"
+            className={styles.deleteButton}
             onClick={remove}
             aria-label={t('delete')}
             disabled={busy}
@@ -113,13 +114,13 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
         ) : undefined
       }
     >
-      <div className="form">
-        <div className="form-row type-row">
-          <div className="type-preview">
+      <div className={styles.form}>
+        <div className={styles.typeRow}>
+          <div className={styles.typePreview}>
             <DrinkIcon alcohol={alcohol} size="md" />
           </div>
           <select
-            className="field select"
+            className={`${styles.field} ${styles.select}`}
             value={alcohol}
             onChange={(e) => setAlcohol(e.target.value as AlcoholType)}
           >
@@ -131,16 +132,20 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           </select>
         </div>
 
-        <div className="form-grid">
-          <div className="field-group">
+        <div className={styles.grid}>
+          <div className={styles.fieldGroup}>
             <input
-              className="field"
+              className={styles.field}
               inputMode="decimal"
               placeholder={t('volume')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <select className="field-suffix" value={unit} onChange={(e) => setUnit(e.target.value)}>
+            <select
+              className={styles.suffix}
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            >
               {UNITS.map((u) => (
                 <option key={u} value={u}>
                   {u}
@@ -148,25 +153,25 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
               ))}
             </select>
           </div>
-          <div className="field-group">
+          <div className={styles.fieldGroup}>
             <input
-              className="field"
+              className={styles.field}
               inputMode="decimal"
               placeholder="ABV, °"
               value={abv}
               onChange={(e) => setAbv(e.target.value)}
             />
           </div>
-          <div className="field-group">
+          <div className={styles.fieldGroup}>
             <input
-              className="field"
+              className={styles.field}
               inputMode="decimal"
               placeholder={t('expenses')}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
             <select
-              className="field-suffix"
+              className={styles.suffix}
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -177,19 +182,19 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
               ))}
             </select>
           </div>
-          <div className="field-group">
-            <input className="field" value={formatDayShort(date, locale)} readOnly />
+          <div className={styles.fieldGroup}>
+            <input className={styles.field} value={formatDayShort(date, locale)} readOnly />
           </div>
         </div>
 
         <input
-          className="field notes"
+          className={`${styles.field} ${styles.notes}`}
           placeholder={t('notes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        <button type="button" className="btn-primary" onClick={save} disabled={busy}>
+        <button type="button" className={styles.saveButton} onClick={save} disabled={busy}>
           {t('save')}
         </button>
       </div>
