@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Drink, TabId } from './types'
-import { BottomNav } from './components/BottomNav'
-import { CalendarPage } from './pages/CalendarPage'
-import { DayModal } from './pages/DayModal'
-import { DrinkForm } from './pages/DrinkForm'
-import { StatsPage } from './pages/StatsPage'
-import { SettingsPage } from './pages/SettingsPage'
-import { onLocalDataChange } from './sync/bus'
-import { fullSync, scheduleSync } from './sync/sync'
-import { isCloudConfigured } from './lib/supabase'
+import type { Drink } from '@/shared/api/diary'
+import { CalendarPage, DayModal, DrinkForm } from '@/pages/calendar'
+import { SettingsPage } from '@/pages/settings'
+import { StatsPage } from '@/pages/statistics'
+import { fullSync, scheduleSync } from '@/features/cloud-sync'
+import { isCloudConfigured } from '@/shared/api/supabase'
+import { onLocalDataChange } from '@/shared/lib/dataChanges'
+import type { TabId } from './model/navigation'
+import { BottomNav } from './ui/BottomNav'
 
 export default function App() {
   const [tab, setTab] = useState<TabId>('calendar')

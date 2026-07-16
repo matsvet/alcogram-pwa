@@ -1,4 +1,4 @@
-import type { TabId } from '../types'
+import type { TabId } from '../model/navigation'
 
 interface Props {
   tab: TabId

@@ -1,5 +1,5 @@
-import type { Drink } from '../types'
-import { ethanolMl } from './units'
+import type { Drink } from '@/shared/api/diary'
+import { ethanolMl } from '@/shared/lib/volume'
 
 export interface PeriodStats {
   totalEthanolMl: number

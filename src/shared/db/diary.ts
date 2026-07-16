@@ -1,11 +1,11 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Drink, SoberDay } from './types'
-import { notifyLocalDataChange } from './sync/bus'
+import type { Drink, SoberDay } from '@/shared/api/diary'
+import { notifyLocalDataChange } from '@/shared/lib/dataChanges'
 import {
   makeSyncQueueItem,
   type SyncEntity,
   type SyncQueueItem,
-} from './sync/outbox'
+} from './syncQueue'
 
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>

@@ -1,4 +1,4 @@
-import type { Drink, SoberDay } from '../types'
+import type { Drink, SoberDay } from '@/shared/api/diary'
 import {
   bulkPutDrinksSilent,
   bulkPutSoberSilent,
@@ -6,9 +6,9 @@ import {
   getAllDrinksRaw,
   getAllSoberDaysRaw,
   getSyncQueue,
-} from '../db'
-import { getSupabase, isCloudConfigured } from '../lib/supabase'
-import { chooseSyncWinner, type SyncQueueItem } from './outbox'
+} from '@/shared/db/diary'
+import { chooseSyncWinner, type SyncQueueItem } from '@/shared/db/syncQueue'
+import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 
 export type SyncResult =
   | { ok: true; drinksUp: number; drinksDown: number; soberUp: number; soberDown: number }

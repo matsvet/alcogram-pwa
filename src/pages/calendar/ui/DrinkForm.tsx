@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import type { Drink } from '../types'
-import { ALCOHOL_TYPES, CURRENCIES, UNITS } from '../types'
-import { deleteDrink, getDrinksByDate, putDrink } from '../db'
-import { createManualDrink } from '../utils/csv'
-import { formatDayShort } from '../utils/date'
-import { toMl } from '../utils/units'
-import { DrinkIcon } from '../components/DrinkIcon'
-import { Modal } from '../components/Modal'
+import type { Drink } from '@/shared/api/diary'
+import { deleteDrink, getDrinksByDate, putDrink } from '@/shared/db/diary'
+import { formatDayShort } from '@/shared/lib/date'
+import { toMl } from '@/shared/lib/volume'
+import { Modal } from '@/shared/ui/Modal'
+import { ALCOHOL_TYPES, CURRENCIES, createManualDrink, UNITS } from '../model/drink'
+import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
   date: string

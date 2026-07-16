@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { countDrinks, getAllDrinks } from '../db'
+import { countDrinks, getAllDrinks } from '@/shared/db/diary'
 import {
   drinksToCsv,
   importDrinks,
   parseImportFile,
-} from '../utils/csv'
-import { CloudAuth } from '../components/CloudAuth'
-import type { ImportMode, ImportResult } from '../types'
+} from '../lib/importExport'
+import type { ImportMode, ImportResult } from '../model/import'
+import { CloudAuth } from './CloudAuth'
 
 const APP_VERSION = '1.1.0'
 

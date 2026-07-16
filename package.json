@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "check:sync": "node --experimental-strip-types src/sync/outbox.check.ts",
+    "check:sync": "node --experimental-strip-types src/shared/db/syncQueue.check.ts",
     "preview": "vite preview"
   },
   "dependencies": {

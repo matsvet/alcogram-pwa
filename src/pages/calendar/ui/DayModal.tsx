@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
-import type { Drink } from '../types'
+import type { Drink } from '@/shared/api/diary'
 import {
   getDrinksByDate,
   isSoberDay,
   markSoberDay,
   unmarkSoberDay,
-} from '../db'
-import { formatDayTitle } from '../utils/date'
-import { formatPrice, formatVolume } from '../utils/units'
-import { DrinkIcon } from '../components/DrinkIcon'
-import { Modal } from '../components/Modal'
+} from '@/shared/db/diary'
+import { formatDayTitle } from '@/shared/lib/date'
+import { formatPrice, formatVolume } from '@/shared/lib/volume'
+import { Modal } from '@/shared/ui/Modal'
+import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
   date: string

@@ -1,4 +1,4 @@
-import { chooseSyncWinner, syncQueueKey } from './outbox.ts'
+import { chooseSyncWinner, syncQueueKey } from './syncQueue.ts'
 
 function assert(ok: boolean, message: string): void {
   if (!ok) throw new Error(message)

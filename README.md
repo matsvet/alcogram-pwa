@@ -10,6 +10,20 @@
 - TypeScript + React + Vite + vite-plugin-pwa
 - Dexie (IndexedDB)
 - Supabase (Auth + Postgres), опционально
+- Feature-Sliced Design v2.1
+
+## Структура кода
+
+Проект использует минимальную FSD-структуру:
+
+- `src/app/`: точка входа, глобальные стили и композиция приложения;
+- `src/pages/`: вкладки календаря, статистики и настроек;
+- `src/features/`: переиспользуемая синхронизация с облаком;
+- `src/shared/`: IndexedDB, Supabase-клиент, общие UI-компоненты и утилиты.
+
+Импорты направлены только вниз по слоям: `app` -> `pages` / `features` ->
+`shared`. Новые page и feature slices должны экспортировать внешний API через
+`index.ts`.
 
 ## Запуск локально
 

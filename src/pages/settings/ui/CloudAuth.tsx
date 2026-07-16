@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
-import { getSupabase, isCloudConfigured } from '../lib/supabase'
-import { fullSync, onSyncStatus } from '../sync/sync'
+import { fullSync, onSyncStatus } from '@/features/cloud-sync'
+import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 
 interface Props {
   onSynced: () => void

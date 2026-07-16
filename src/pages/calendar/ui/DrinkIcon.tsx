@@ -1,4 +1,4 @@
-import type { Drink } from '../types'
+import type { Drink } from '@/shared/api/diary'
 
 type Size = 'sm' | 'md' | 'lg'
 

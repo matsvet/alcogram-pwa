@@ -2,12 +2,14 @@
 
 ## Project Structure & Module Organization
 
-The application is a React 19 + TypeScript PWA built with Vite. Source code is
-under `src/`: page-level UI belongs in `src/pages/`, reusable UI in
-`src/components/`, IndexedDB access in `src/db.ts`, and domain types in
-`src/types.ts`. Keep pure calculations and import helpers in `src/utils/`.
-Cloud configuration and synchronization live in `src/lib/supabase.ts` and
-`src/sync/`. Static files and PWA icons are in `public/`.
+The application is a React 19 + TypeScript PWA built with Vite and Feature-
+Sliced Design v2.1. Source code is under `src/`: application composition,
+entry point, global styles, and navigation belong in `src/app/`; route-level
+UI belongs in page slices under `src/pages/`; reusable cross-page interactions
+belong in `src/features/`; infrastructure belongs in `src/shared/`. Imports
+may only go to a lower FSD layer, and page or feature slices are imported
+through their `index.ts` public API. Static files and PWA icons are in
+`public/`.
 `supabase/schema.sql` defines the optional Supabase backend schema.
 
 ## Build, Test, and Development Commands

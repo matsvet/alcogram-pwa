@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import type { Drink } from '../types'
-import { getDatesWithDrinks, getSoberDatesInMonth } from '../db'
-import { daysInMonth, toDateStr, WEEKDAYS, weekdayMon0 } from '../utils/date'
-import { DrinkIcon } from '../components/DrinkIcon'
+import type { Drink } from '@/shared/api/diary'
+import { getDatesWithDrinks, getSoberDatesInMonth } from '@/shared/db/diary'
+import { daysInMonth, toDateStr, WEEKDAYS, weekdayMon0 } from '@/shared/lib/date'
+import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
   year: number

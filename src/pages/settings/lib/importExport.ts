@@ -1,11 +1,12 @@
-import type { Drink, ImportMode, ImportResult, ImportRow } from '../types'
+import type { Drink } from '@/shared/api/diary'
 import {
   bulkPutDrinks,
   clearAllDrinks,
   drinkMergeKey,
   getAllDrinks,
-} from '../db'
-import { parseNumber, toMl } from './units'
+} from '@/shared/db/diary'
+import { parseNumber, toMl } from '@/shared/lib/volume'
+import type { ImportMode, ImportResult, ImportRow } from '../model/import'
 
 function uuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -221,35 +222,4 @@ export function drinksToCsv(drinks: Drink[]): string {
 function csvEscape(s: string): string {
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
   return s
-}
-
-export function createManualDrink(partial: {
-  date: string
-  alcohol: string
-  amount: number
-  unit: string
-  abv: number | null
-  price: number | null
-  currency: string
-  notes: string
-  drinkIndex: number
-}): Drink {
-  const now = Date.now()
-  return {
-    id: uuid(),
-    date: partial.date,
-    drinkIndex: partial.drinkIndex,
-    alcohol: partial.alcohol,
-    amount: partial.amount,
-    unit: partial.unit,
-    amountMl: toMl(partial.amount, partial.unit),
-    abv: partial.abv,
-    price: partial.price,
-    currency: partial.currency,
-    notes: partial.notes,
-    createdAt: now,
-    updatedAt: now,
-    source: 'manual',
-    deleted: false,
-  }
 }

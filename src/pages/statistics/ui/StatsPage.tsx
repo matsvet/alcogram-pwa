@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getAllDrinks, getDrinksInRange } from '../db'
-import { computeStats, periodBounds, type PeriodStats } from '../utils/stats'
-import { monthName } from '../utils/date'
+import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
+import { monthName } from '@/shared/lib/date'
+import { computeStats, periodBounds, type PeriodStats } from '../model/statistics'
 
 type Period = 'month' | 'year' | 'all'
 
