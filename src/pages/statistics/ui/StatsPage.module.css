@@ -107,6 +107,20 @@
   word-break: break-word;
 }
 
+.drinkingDaysValue {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
+
+.drinkingDaysPercentage {
+  color: var(--color-primary);
+  font-size: 0.75em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .statName {
   margin-top: 4px;
   color: var(--color-text-muted);

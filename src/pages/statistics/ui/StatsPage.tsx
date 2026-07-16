@@ -42,9 +42,9 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
         ? String(year)
         : t('allTime')
 
-  const topTypes = [...(stats?.topTypes ?? [])]
-    .sort((a, b) => (topTypesMetric === 'count' ? b.count - a.count : b.volumeMl - a.volumeMl))
-    .slice(0, 8)
+  const topTypes = [...(stats?.topTypes ?? [])].sort((a, b) =>
+    topTypesMetric === 'count' ? b.count - a.count : b.volumeMl - a.volumeMl,
+  )
   const maxTopValue = Math.max(
     1,
     ...topTypes.map((t) => (topTypesMetric === 'count' ? t.count : t.volumeMl)),
@@ -62,7 +62,9 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
   const formattedDrinkingDayPercentage = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 1,
   }).format(drinkingDayPercentage ?? 0)
-  const litersFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 3 })
+  const litersFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 3,
+  })
 
   const previousPeriod = () => {
     if (period === 'year') onYearMonth(year - 1, month)
@@ -167,13 +169,15 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
                 <div className={styles.statName}>{t('spent')}</div>
               </div>
               <div className={styles.stat}>
-                <div className={styles.statValue}>{stats.drinkingDays}</div>
+                <div className={`${styles.statValue} ${styles.drinkingDaysValue}`}>
+                  <span>{stats.drinkingDays}</span>
+                  {drinkingDayPercentage != null && (
+                    <span className={styles.drinkingDaysPercentage}>
+                      {formattedDrinkingDayPercentage}%
+                    </span>
+                  )}
+                </div>
                 <div className={styles.statName}>{t('drinkingDays')}</div>
-                {drinkingDayPercentage != null && (
-                  <div className={styles.statHint}>
-                    {formattedDrinkingDayPercentage}% {t('ofPeriodDays')}
-                  </div>
-                )}
               </div>
               <div className={styles.stat}>
                 <div className={styles.statValue}>{stats.totalDrinks}</div>
