@@ -58,8 +58,6 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
 
   const statusText: string | null = hasDrinks || showsAsSober ? null : t('noDataDay')
 
-  const showCardsBlock = drinks.length > 0 || showsAsSober
-
   return (
     <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
       <div className={styles.root}>

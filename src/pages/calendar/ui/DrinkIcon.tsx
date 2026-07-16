@@ -1,9 +1,6 @@
+import { Beer, GlassWater, type LucideIcon, Martini, Wine } from 'lucide-react'
 import type { AlcoholType, Drink } from '@/shared/api/diary'
-import { BeerDrinkIcon } from './BeerDrinkIcon'
 import styles from './DrinkIcon.module.css'
-import { EmptyDrinkIcon } from './EmptyDrinkIcon'
-import { SpiritDrinkIcon } from './SpiritDrinkIcon'
-import { WineDrinkIcon } from './WineDrinkIcon'
 
 type Size = 'sm' | 'md' | 'lg'
 
@@ -14,7 +11,19 @@ interface Props {
   stack?: Drink[]
 }
 
-type IconKind = 'beer' | 'wine' | 'spirit'
+type IconKind = 'beer' | 'empty' | 'spirit' | 'wine'
+
+interface IconConfig {
+  color: string
+  Icon: LucideIcon
+}
+
+const ICONS: Record<IconKind, IconConfig> = {
+  beer: { Icon: Beer, color: '#C17D11' },
+  empty: { Icon: GlassWater, color: '#9AABB8' },
+  spirit: { Icon: Martini, color: '#8B5CF6' },
+  wine: { Icon: Wine, color: '#9F1239' },
+}
 
 const ICON_KIND: Record<AlcoholType, IconKind> = {
   Beer: 'beer',
@@ -68,20 +77,9 @@ function SingleIcon({
   empty?: boolean
   size?: Size
 }) {
-  const k = empty || !alcohol ? 'empty' : ICON_KIND[alcohol]
+  const kind = empty || !alcohol ? 'empty' : ICON_KIND[alcohol]
   const px = SIZES[size]
+  const { Icon, color } = ICONS[kind]
 
-  if (k === 'empty') {
-    return <EmptyDrinkIcon size={px} />
-  }
-
-  if (k === 'beer') {
-    return <BeerDrinkIcon size={px} />
-  }
-
-  if (k === 'wine') {
-    return <WineDrinkIcon size={px} />
-  }
-
-  return <SpiritDrinkIcon size={px} />
+  return <Icon size={px} color={color} strokeWidth={1.75} aria-hidden />
 }

@@ -1,9 +1,7 @@
+import { CalendarDays, ChartNoAxesColumn, Settings } from 'lucide-react'
 import { useI18n } from '@/shared/lib/i18n'
 import type { TabId } from '../model/navigation'
 import styles from './BottomNav.module.css'
-import { CalendarIcon } from './CalendarIcon'
-import { SettingsIcon } from './SettingsIcon'
-import { StatsIcon } from './StatsIcon'
 
 interface Props {
   tab: TabId
@@ -19,7 +17,7 @@ export function BottomNav({ tab, onChange }: Props) {
         className={`${styles.item} ${tab === 'stats' ? styles.isActive : ''}`}
         onClick={() => onChange('stats')}
       >
-        <StatsIcon />
+        <ChartNoAxesColumn size={22} strokeWidth={2} aria-hidden />
         <span>{t('statistics')}</span>
       </button>
       <button
@@ -27,7 +25,7 @@ export function BottomNav({ tab, onChange }: Props) {
         className={`${styles.item} ${tab === 'calendar' ? styles.isActive : ''}`}
         onClick={() => onChange('calendar')}
       >
-        <CalendarIcon />
+        <CalendarDays size={22} strokeWidth={2} aria-hidden />
         <span>{t('calendar')}</span>
       </button>
       <button
@@ -35,7 +33,7 @@ export function BottomNav({ tab, onChange }: Props) {
         className={`${styles.item} ${tab === 'settings' ? styles.isActive : ''}`}
         onClick={() => onChange('settings')}
       >
-        <SettingsIcon />
+        <Settings size={22} strokeWidth={2} aria-hidden />
         <span>{t('settings')}</span>
       </button>
     </nav>
