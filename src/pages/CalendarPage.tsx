@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '../types'
-import { getDatesWithDrinks } from '../db'
+import { getDatesWithDrinks, getSoberDatesInMonth } from '../db'
 import { daysInMonth, monthName, toDateStr, WEEKDAYS, weekdayMon0 } from '../utils/date'
+import { resolveDayVisual } from '../utils/tracking'
 import { DrinkIcon } from '../components/DrinkIcon'
 
 interface Props {
@@ -20,11 +21,18 @@ export function CalendarPage({
   refreshKey,
 }: Props) {
   const [byDate, setByDate] = useState<Map<string, Drink[]>>(new Map())
+  const [soberDates, setSoberDates] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     let cancelled = false
-    getDatesWithDrinks(year, month).then((map) => {
-      if (!cancelled) setByDate(map)
+    Promise.all([
+      getDatesWithDrinks(year, month),
+      getSoberDatesInMonth(year, month),
+    ]).then(([map, sober]) => {
+      if (!cancelled) {
+        setByDate(map)
+        setSoberDates(sober)
+      }
     })
     return () => {
       cancelled = true
@@ -75,23 +83,27 @@ export function CalendarPage({
             }
             const date = toDateStr(year, month, day)
             const drinks = byDate.get(date) ?? []
-            const has = drinks.length > 0
+            const visual = resolveDayVisual(
+              date,
+              drinks.length > 0,
+              soberDates.has(date),
+            )
             return (
               <button
                 key={date}
                 type="button"
-                className={`day-cell ${has ? 'has-drinks' : ''}`}
+                className={`day-cell visual-${visual}`}
                 onClick={() => onSelectDay(date)}
               >
-                {has ? (
+                {visual === 'drinks' && (
                   <DrinkIcon
                     stack={drinks}
                     alcohol={drinks[0]?.alcohol}
                     size="sm"
                   />
-                ) : (
-                  <DrinkIcon empty size="sm" />
                 )}
+                {visual === 'sober' && <DrinkIcon empty size="sm" />}
+                {visual === 'blank' && <span className="day-icon-spacer" />}
                 <span className="day-num">{day}</span>
               </button>
             )

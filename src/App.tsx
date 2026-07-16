@@ -115,6 +115,7 @@ export default function App() {
           date={selectedDate}
           onClose={closeDay}
           onOpenDrink={openDrink}
+          onChanged={bump}
           refreshKey={refreshKey}
         />
       )}

@@ -1,12 +1,18 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Drink } from './types'
+import type { Drink, SoberDay } from './types'
 
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>
+  soberDays: EntityTable<SoberDay, 'date'>
 }
 
 db.version(1).stores({
   drinks: 'id, date, drinkIndex, alcohol, [date+drinkIndex], updatedAt',
+})
+
+db.version(2).stores({
+  drinks: 'id, date, drinkIndex, alcohol, [date+drinkIndex], updatedAt',
+  soberDays: 'date, createdAt',
 })
 
 export { db }
@@ -50,8 +56,46 @@ export async function getDatesWithDrinks(
   return map
 }
 
+export async function getSoberDatesInMonth(
+  year: number,
+  month: number,
+): Promise<Set<string>> {
+  const mm = String(month).padStart(2, '0')
+  const from = `${year}-${mm}-01`
+  const to = `${year}-${mm}-31`
+  const rows = await db.soberDays
+    .where('date')
+    .between(from, to, true, true)
+    .toArray()
+  return new Set(rows.map((r) => r.date))
+}
+
+export async function isSoberDay(date: string): Promise<boolean> {
+  const row = await db.soberDays.get(date)
+  return !!row
+}
+
+export async function markSoberDay(
+  date: string,
+  source: SoberDay['source'] = 'manual',
+): Promise<void> {
+  await db.soberDays.put({
+    date,
+    createdAt: Date.now(),
+    source,
+  })
+}
+
+export async function unmarkSoberDay(date: string): Promise<void> {
+  await db.soberDays.delete(date)
+}
+
 export async function putDrink(drink: Drink): Promise<void> {
-  await db.drinks.put(drink)
+  // Adding a drink cancels sober mark for that day
+  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+    await db.drinks.put(drink)
+    await db.soberDays.delete(drink.date)
+  })
 }
 
 export async function deleteDrink(id: string): Promise<void> {
@@ -59,7 +103,10 @@ export async function deleteDrink(id: string): Promise<void> {
 }
 
 export async function clearAllDrinks(): Promise<void> {
-  await db.drinks.clear()
+  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+    await db.drinks.clear()
+    await db.soberDays.clear()
+  })
 }
 
 export async function countDrinks(): Promise<number> {

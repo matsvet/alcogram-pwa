@@ -208,6 +208,45 @@ button {
   font-weight: 500;
 }
 
+/* Keep day cells aligned when icon is missing (unknown / blank) */
+.day-icon-spacer {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.day-cell.visual-blank .day-num {
+  color: var(--text-muted);
+}
+
+.day-status {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+}
+
+.sober-preview {
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.btn-sober {
+  width: 100%;
+  background: #eef6f0;
+  color: #2d6a4f;
+  font-weight: 600;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #b7e4c7;
+}
+
+.btn-sober:active {
+  background: #d8f3dc;
+}
+
+.btn-sober:disabled {
+  opacity: 0.6;
+}
+
 .calendar-year {
   text-align: right;
   color: var(--text-muted);

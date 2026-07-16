@@ -1,5 +1,12 @@
 export type DrinkSource = 'import' | 'manual'
 
+/** Explicit "did not drink" mark for a calendar day */
+export interface SoberDay {
+  date: string // YYYY-MM-DD
+  createdAt: number
+  source: 'manual' | 'auto'
+}
+
 export interface Drink {
   id: string
   date: string // YYYY-MM-DD
