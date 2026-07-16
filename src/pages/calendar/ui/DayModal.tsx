@@ -56,19 +56,15 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
     }
   }
 
-  let statusText = t('noDataDay')
-  if (hasDrinks) {
-    statusText = ''
-  } else if (showsAsSober) {
-    statusText = t('markedSober')
-  }
+  const statusText: string | null = hasDrinks || showsAsSober ? null : t('noDataDay')
+
+  const showCardsBlock = drinks.length > 0 || showsAsSober
 
   return (
     <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
       <div className={styles.root}>
-        {statusText && <p className={styles.status}>{statusText}</p>}
-
         <div className={styles.cards}>
+          <p className={styles.status}>{statusText}</p>
           {drinks.map((d) => (
             <button
               key={d.id}
