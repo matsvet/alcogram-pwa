@@ -25,9 +25,11 @@ through their `index.ts` public API. Static files and PWA icons are in
 
 There is no automated test suite yet. At minimum, run `pnpm check` and
 `pnpm build` before submitting changes; the pre-commit hook also runs
-`pnpm check`. Then exercise the changed flow in the browser. For IndexedDB
-or sync changes, verify create, edit, delete, and reload behavior; sync uses
-soft deletes and last-write-wins timestamps.
+`pnpm check`. Do not attempt to open the local application or visually verify
+changes in a browser: this environment does not support that workflow
+reliably. For IndexedDB or sync changes, verify create, edit, delete, and
+reload behavior through available non-browser checks; sync uses soft deletes
+and last-write-wins timestamps.
 
 ## Coding Style & Naming Conventions
 
