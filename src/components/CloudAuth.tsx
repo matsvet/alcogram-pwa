@@ -113,6 +113,26 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
     setMsg('Выход')
   }
 
+  const loginWithGoogle = async () => {
+    setBusy(true)
+    setErr(null)
+    const supabase = getSupabase()
+    if (!supabase) {
+      setBusy(false)
+      return
+    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+      },
+    })
+    if (error) {
+      setErr(error.message)
+      setBusy(false)
+    }
+  }
+
   const syncNow = async () => {
     setBusy(true)
     setErr(null)
@@ -206,6 +226,15 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             onClick={() => void submit()}
           >
             {mode === 'login' ? 'Войти' : 'Создать аккаунт'}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ marginTop: 8, width: '100%' }}
+            disabled={busy}
+            onClick={() => void loginWithGoogle()}
+          >
+            Войти через Google
           </button>
         </>
       )}
