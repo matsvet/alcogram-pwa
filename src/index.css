@@ -99,11 +99,15 @@ button {
   padding: 4px 8px 16px;
 }
 
-.month-nav h1 {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 600;
+.month-picker {
+  min-height: 40px;
+  padding: 6px 10px;
   color: var(--primary);
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
 }
 
 .nav-arrow {
@@ -204,13 +208,6 @@ button {
 
 .btn-sober:disabled {
   opacity: 0.6;
-}
-
-.calendar-year {
-  text-align: right;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  padding: 12px 8px 0;
 }
 
 .drink-stack {

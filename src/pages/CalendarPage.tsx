@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '../types'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '../db'
-import { daysInMonth, monthName, toDateStr, WEEKDAYS, weekdayMon0 } from '../utils/date'
+import { daysInMonth, toDateStr, WEEKDAYS, weekdayMon0 } from '../utils/date'
 import { DrinkIcon } from '../components/DrinkIcon'
 
 interface Props {
@@ -61,7 +61,16 @@ export function CalendarPage({
           <button type="button" className="nav-arrow" onClick={prev} aria-label="Previous month">
             ‹
           </button>
-          <h1>{monthName(month)}</h1>
+          <input
+            type="month"
+            className="month-picker"
+            value={`${year}-${String(month).padStart(2, '0')}`}
+            onChange={(event) => {
+              const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
+              onYearMonth(nextYear, nextMonth)
+            }}
+            aria-label="Выбрать месяц и год"
+          />
           <button type="button" className="nav-arrow" onClick={next} aria-label="Next month">
             ›
           </button>
@@ -108,8 +117,6 @@ export function CalendarPage({
             )
           })}
         </div>
-
-        <div className="calendar-year">{year}</div>
       </div>
     </div>
   )
