@@ -6,7 +6,6 @@ import { DayModal } from './pages/DayModal'
 import { DrinkForm } from './pages/DrinkForm'
 import { StatsPage } from './pages/StatsPage'
 import { SettingsPage } from './pages/SettingsPage'
-import { ensureSeeded } from './seed'
 import { onLocalDataChange } from './sync/bus'
 import { fullSync, scheduleSync } from './sync/sync'
 import { isCloudConfigured } from './lib/supabase'
@@ -16,8 +15,6 @@ export default function App() {
   const [year, setYear] = useState(2026)
   const [month, setMonth] = useState(3)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [ready, setReady] = useState(false)
-  const [seedInfo, setSeedInfo] = useState<string | null>(null)
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [editingDrink, setEditingDrink] = useState<Drink | null | undefined>(
@@ -25,24 +22,6 @@ export default function App() {
   )
 
   const bump = useCallback(() => setRefreshKey((k) => k + 1), [])
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      const status = await ensureSeeded()
-      if (cancelled) return
-      if (status.state === 'done') {
-        setSeedInfo(`Импортировано ${status.count} записей из экспорта`)
-        setYear(2026)
-        setMonth(3)
-      }
-      setReady(true)
-      bump()
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [bump])
 
   // Wire local writes → debounced cloud sync
   useEffect(() => {
@@ -91,26 +70,8 @@ export default function App() {
     bump()
   }
 
-  if (!ready) {
-    return (
-      <div className="app-shell">
-        <div className="boot-screen">
-          <div className="boot-card">Загрузка данных…</div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="app-shell">
-      {seedInfo && (
-        <div className="seed-toast" role="status">
-          <span>{seedInfo}</span>
-          <button type="button" onClick={() => setSeedInfo(null)} aria-label="Закрыть">
-            ×
-          </button>
-        </div>
-      )}
       <main className="app-main">
         {tab === 'calendar' && (
           <CalendarPage
