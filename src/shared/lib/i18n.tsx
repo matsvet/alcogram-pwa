@@ -198,14 +198,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   return <I18nContext.Provider value={{ locale, setLocale, t }}>{children}</I18nContext.Provider>
 }
 
-// oxlint-disable-next-line react/only-export-components
 export function useI18n(): I18nValue {
   const value = useContext(I18nContext)
   if (!value) throw new Error('useI18n must be used within I18nProvider')
   return value
 }
 
-// oxlint-disable-next-line react/only-export-components
 export function alcoholName(alcohol: string, locale: Locale): string {
   const names: Record<string, [string, string]> = {
     Beer: ['Beer', 'Пиво'],

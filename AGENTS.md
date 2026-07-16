@@ -16,7 +16,7 @@ through their `index.ts` public API. Static files and PWA icons are in
 
 - `npm install`: install the locked dependencies from `package-lock.json`.
 - `npm run dev`: start the Vite development server.
-- `npm run lint`: run Oxlint over TypeScript and React code.
+- `npm run lint`: run Biome linting over TypeScript and React code.
 - `npm run build`: type-check with `tsc -b` and create the production bundle.
 - `npm run preview`: serve the built bundle locally after `npm run build`.
 
