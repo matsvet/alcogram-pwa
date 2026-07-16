@@ -79,7 +79,7 @@
 }
 
 .suffix {
-  max-width: 52px;
+  width: 52px;
   padding: 0 8px;
   color: var(--color-text-muted);
   font-size: 0.9rem;
@@ -89,6 +89,7 @@
 }
 
 .notes {
+  resize: vertical;
   text-align: center;
 }
 

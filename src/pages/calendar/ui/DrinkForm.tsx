@@ -195,11 +195,12 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           </div>
         </div>
 
-        <input
+        <textarea
           className={`${styles.field} ${styles.notes}`}
           placeholder={t('notes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          rows={2}
         />
 
         <button type="button" className={styles.saveButton} onClick={save} disabled={busy}>
