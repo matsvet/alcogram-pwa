@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { clearAllDrinks, countDrinks, getAllDrinks } from '../db'
+import { countDrinks, getAllDrinks } from '../db'
 import {
   drinksToCsv,
   importDrinks,
@@ -56,16 +56,6 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
     a.download = `alcogram-export-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
-  }
-
-  const clearAll = async () => {
-    if (!confirm('Удалить ВСЕ записи с устройства? (в облаке пометятся удалёнными после sync)'))
-      return
-    if (!confirm('Точно удалить? Сделайте экспорт, если нужен бэкап.')) return
-    await clearAllDrinks()
-    setCount(0)
-    setResult(null)
-    onDataChange()
   }
 
   return (
@@ -133,13 +123,10 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
         </section>
 
         <section className="settings-block">
-          <h2>Экспорт / очистка</h2>
+          <h2>Экспорт</h2>
           <div className="btn-row">
             <button type="button" className="btn-secondary" onClick={() => void exportCsv()}>
               Экспорт CSV
-            </button>
-            <button type="button" className="btn-danger" onClick={() => void clearAll()}>
-              Очистить всё
             </button>
           </div>
         </section>
