@@ -298,7 +298,7 @@ function remoteToSober(r: RemoteSober): SoberDay {
     date: r.date,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
-    source: (r.source as SoberDay['source']) || 'manual',
+    source: 'manual',
     deleted: r.deleted ?? false,
   }
 }

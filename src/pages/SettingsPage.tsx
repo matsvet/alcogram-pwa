@@ -5,7 +5,6 @@ import {
   importDrinks,
   parseImportFile,
 } from '../utils/csv'
-import { forceReseed } from '../seed'
 import { CloudAuth } from '../components/CloudAuth'
 import type { ImportMode, ImportResult } from '../types'
 
@@ -22,7 +21,6 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   const [result, setResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [seedMsg, setSeedMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -65,36 +63,9 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
       return
     if (!confirm('Точно удалить? Сделайте экспорт, если нужен бэкап.')) return
     await clearAllDrinks()
-    localStorage.removeItem('alcogram_seed_v1')
     setCount(0)
     setResult(null)
-    setSeedMsg(null)
     onDataChange()
-  }
-
-  const reseed = async () => {
-    if (
-      !confirm(
-        'Перезалить встроенный экспорт Alcogram (694 записи, 2023–2026)? Текущие локальные данные будут стёрты и заменены.',
-      )
-    ) {
-      return
-    }
-    setBusy(true)
-    setSeedMsg(null)
-    setError(null)
-    try {
-      const status = await forceReseed()
-      if (status.state === 'done') {
-        setSeedMsg(`Загружено ${status.count} записей из seed · затем sync в облако`)
-        setCount(await countDrinks())
-        onDataChange()
-      } else if (status.state === 'error') {
-        setError(status.message)
-      }
-    } finally {
-      setBusy(false)
-    }
   }
 
   return (
@@ -112,20 +83,6 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
           <p className="muted">
             Версия {APP_VERSION} · IndexedDB + опционально Supabase
           </p>
-          <p className="muted">
-            Seed: 01.01.2023–28.03.2026. Авто-«не пил»: 01.01.2023–31.03.2026.
-            С 01.04.2026 и до 2023 – пусто, пока не отметишь вручную.
-          </p>
-          <button
-            type="button"
-            className="btn-secondary"
-            style={{ width: '100%', marginTop: 8 }}
-            disabled={busy}
-            onClick={() => void reseed()}
-          >
-            Перезалить seed-экспорт
-          </button>
-          {seedMsg && <div className="import-result">{seedMsg}</div>}
         </section>
 
         <section className="settings-block">

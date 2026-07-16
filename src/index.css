@@ -71,47 +71,6 @@ button {
   position: relative;
 }
 
-.boot-screen {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.boot-card {
-  background: var(--card);
-  padding: 24px 32px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.seed-toast {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 8px 12px 0;
-  padding: 10px 12px;
-  background: #e8f8ef;
-  color: #1e7a45;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  box-shadow: var(--shadow);
-}
-
-.seed-toast button {
-  font-size: 1.2rem;
-  line-height: 1;
-  color: #1e7a45;
-  padding: 0 4px;
-}
-
 .app-main {
   flex: 1;
   overflow-y: auto;

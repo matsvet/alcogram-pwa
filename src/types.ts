@@ -5,7 +5,7 @@ export interface SoberDay {
   date: string // YYYY-MM-DD
   createdAt: number
   updatedAt: number
-  source: 'manual' | 'auto'
+  source: 'manual'
   deleted: boolean
 }
 

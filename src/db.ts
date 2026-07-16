@@ -143,7 +143,6 @@ export async function isSoberDay(date: string): Promise<boolean> {
 
 export async function markSoberDay(
   date: string,
-  source: SoberDay['source'] = 'manual',
 ): Promise<void> {
   const now = Date.now()
   const existing = await db.soberDays.get(date)
@@ -151,7 +150,7 @@ export async function markSoberDay(
     date,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
-    source,
+    source: 'manual',
     deleted: false,
   }
   await db.transaction('rw', db.soberDays, db.syncQueue, async () => {
@@ -236,7 +235,7 @@ export async function clearAllDrinks(): Promise<void> {
   notifyLocalDataChange()
 }
 
-/** Hard wipe local only (e.g. before force reseed). Does not soft-delete for sync. */
+/** Hard wipe local only. Does not soft-delete for sync. */
 export async function hardClearLocal(): Promise<void> {
   await db.transaction('rw', db.drinks, db.soberDays, db.syncQueue, async () => {
     await db.drinks.clear()

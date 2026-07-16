@@ -12,8 +12,8 @@ import { isCloudConfigured } from './lib/supabase'
 
 export default function App() {
   const [tab, setTab] = useState<TabId>('calendar')
-  const [year, setYear] = useState(2026)
-  const [month, setMonth] = useState(3)
+  const [year, setYear] = useState(() => new Date().getFullYear())
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)

@@ -8,7 +8,6 @@ import {
 } from '../db'
 import { formatDayTitle } from '../utils/date'
 import { formatPrice, formatVolume } from '../utils/units'
-import { isInTrackedPeriod } from '../utils/tracking'
 import { DrinkIcon } from '../components/DrinkIcon'
 import { Modal } from '../components/Modal'
 
@@ -37,15 +36,13 @@ export function DayModal({
   }, [date, refreshKey])
 
   const hasDrinks = drinks.length > 0
-  const tracked = isInTrackedPeriod(date)
-  // Tracked period without drinks = auto sober; or explicit mark
-  const showsAsSober = !hasDrinks && (manualSober || tracked)
+  const showsAsSober = !hasDrinks && manualSober
 
   const markSober = async () => {
     if (hasDrinks) return
     setBusy(true)
     try {
-      await markSoberDay(date, 'manual')
+      await markSoberDay(date)
       setManualSober(true)
       onChanged()
     } finally {
@@ -68,10 +65,7 @@ export function DayModal({
   if (hasDrinks) {
     statusText = ''
   } else if (showsAsSober) {
-    statusText =
-      tracked && !manualSober
-        ? 'Не пил (авто: 01.01.2023–31.03.2026)'
-        : 'Отмечено: не пил'
+    statusText = 'Отмечено: не пил'
   }
 
   return (
@@ -106,8 +100,7 @@ export function DayModal({
           )}
         </div>
 
-        {/* Outside tracked period: mark / unmark sober */}
-        {!hasDrinks && !tracked && !manualSober && (
+        {!hasDrinks && !manualSober && (
           <button
             type="button"
             className="btn-sober"
@@ -117,7 +110,7 @@ export function DayModal({
             Не пил / сегодня не пью
           </button>
         )}
-        {!hasDrinks && !tracked && manualSober && (
+        {!hasDrinks && manualSober && (
           <button
             type="button"
             className="btn-secondary"
@@ -128,9 +121,6 @@ export function DayModal({
             Снять отметку «не пил»
           </button>
         )}
-
-        {/* Inside tracked: already auto-sober; optional explicit mark is redundant */}
-
         <button
           type="button"
           className="btn-primary"

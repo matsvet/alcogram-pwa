@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import type { Drink } from '../types'
 import { getDatesWithDrinks, getSoberDatesInMonth } from '../db'
 import { daysInMonth, monthName, toDateStr, WEEKDAYS, weekdayMon0 } from '../utils/date'
-import { resolveDayVisual } from '../utils/tracking'
 import { DrinkIcon } from '../components/DrinkIcon'
 
 interface Props {
@@ -83,11 +82,11 @@ export function CalendarPage({
             }
             const date = toDateStr(year, month, day)
             const drinks = byDate.get(date) ?? []
-            const visual = resolveDayVisual(
-              date,
-              drinks.length > 0,
-              soberDates.has(date),
-            )
+            const visual = drinks.length > 0
+              ? 'drinks'
+              : soberDates.has(date)
+                ? 'sober'
+                : 'blank'
             return (
               <button
                 key={date}
