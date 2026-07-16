@@ -68,8 +68,8 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      <main className="app-main">
+    <div className="relative mx-auto flex min-h-full max-w-[480px] flex-col">
+      <main className="flex-1 overflow-y-auto px-3 pt-3 pb-[calc(72px+env(safe-area-inset-bottom,0px))]">
         {tab === 'calendar' && (
           <CalendarPage
             year={year}

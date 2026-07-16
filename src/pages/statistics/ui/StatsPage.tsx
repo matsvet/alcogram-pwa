@@ -40,70 +40,77 @@ export function StatsPage({ year, month, refreshKey }: Props) {
   const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
 
   return (
-    <div className="page stats-page">
-      <div className="stats-card">
-        <h1>{t('statistics')}</h1>
+    <div className="min-h-full">
+      <div className="min-h-[calc(100vh-100px)] rounded-card bg-card px-3 pt-4 pb-5 shadow-card">
+        <h1 className="mb-4 text-center text-[1.35rem] text-primary">{t('statistics')}</h1>
 
-        <div className="period-tabs">
+        <div className="mb-2 flex rounded-[10px] bg-[#eef1f8] p-0.75">
           {(['month', 'year', 'all'] as Period[]).map((p) => (
             <button
               key={p}
               type="button"
-              className={period === p ? 'active' : ''}
+              className={`flex-1 rounded-lg p-2 text-[0.9rem] text-text-muted ${period === p ? 'bg-white font-semibold text-primary shadow-[0_1px_4px_rgba(0,0,0,0.06)]' : ''}`}
               onClick={() => setPeriod(p)}
             >
               {p === 'month' ? t('month') : p === 'year' ? t('year') : t('all')}
             </button>
           ))}
         </div>
-        <p className="period-label">{label}</p>
+        <p className="mb-4 text-center text-[0.9rem] text-text-muted">{label}</p>
 
         {!stats || stats.totalDrinks === 0 ? (
-          <p className="muted center">{t('noPeriodData')}</p>
+          <p className="text-center text-text-muted">{t('noPeriodData')}</p>
         ) : (
           <>
-            <div className="stat-grid">
-              <div className="stat-box">
-                <div className="stat-value">
+            <div className="mb-5 grid grid-cols-2 gap-2.5">
+              <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+                <div className="break-words text-[1.15rem] font-bold text-text">
                   {stats.totalEthanolMl > 0
                     ? `${(stats.totalEthanolMl / 1000).toFixed(2)} ${locale === 'ru' ? 'л' : 'l'}`
                     : '—'}
                 </div>
-                <div className="stat-name">{t('ethanol')}</div>
+                <div className="mt-1 text-[0.75rem] text-text-muted">{t('ethanol')}</div>
                 {!stats.totalEthanolKnown && stats.totalEthanolMl > 0 && (
-                  <div className="stat-hint">{t('missingAbv')}</div>
+                  <div className="mt-0.5 text-[0.65rem] text-text-muted">{t('missingAbv')}</div>
                 )}
               </div>
-              <div className="stat-box">
-                <div className="stat-value">
+              <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+                <div className="break-words text-[1.15rem] font-bold text-text">
                   {Object.keys(stats.currencies).length === 0
                     ? '—'
                     : Object.entries(stats.currencies)
                         .map(([c, v]) => `${Math.round(v)} ${c}`)
                         .join(', ')}
                 </div>
-                <div className="stat-name">{t('spent')}</div>
+                <div className="mt-1 text-[0.75rem] text-text-muted">{t('spent')}</div>
               </div>
-              <div className="stat-box">
-                <div className="stat-value">{stats.drinkingDays}</div>
-                <div className="stat-name">{t('drinkingDays')}</div>
+              <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+                <div className="break-words text-[1.15rem] font-bold text-text">
+                  {stats.drinkingDays}
+                </div>
+                <div className="mt-1 text-[0.75rem] text-text-muted">{t('drinkingDays')}</div>
               </div>
-              <div className="stat-box">
-                <div className="stat-value">{stats.totalDrinks}</div>
-                <div className="stat-name">{t('drinks')}</div>
+              <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+                <div className="break-words text-[1.15rem] font-bold text-text">
+                  {stats.totalDrinks}
+                </div>
+                <div className="mt-1 text-[0.75rem] text-text-muted">{t('drinks')}</div>
               </div>
             </div>
 
-            <h2 className="section-title">{t('topTypes')}</h2>
-            <div className="top-list">
+            <h2 className="mb-3 text-[1rem] text-text">{t('topTypes')}</h2>
+            <div className="flex flex-col gap-2.5">
               {stats.topTypes.map((t) => (
-                <div key={t.alcohol} className="top-row">
-                  <div className="top-label">
+                <div key={t.alcohol} className="flex flex-col gap-1">
+                  <div className="flex justify-between text-[0.9rem]">
                     <span>{alcoholName(t.alcohol, locale)}</span>
-                    <span className="muted">{t.count}×</span>
+                    <span className="text-text-muted">{t.count}×</span>
                   </div>
-                  <div className="bar-track">
-                    <div className="bar-fill" style={{ width: `${(t.count / maxCount) * 100}%` }} />
+                  <div className="h-2 overflow-hidden rounded bg-[#eef1f8]">
+                    <div
+                      className="h-full min-w-1 rounded bg-primary transition-[width] duration-300"
+                      style={{ width: `${(t.count / maxCount) * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}

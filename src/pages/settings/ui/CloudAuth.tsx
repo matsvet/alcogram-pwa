@@ -48,20 +48,20 @@ export function CloudAuth({ onSynced }: Props) {
 
   if (!configured) {
     return (
-      <section className="settings-block">
+      <section className="mb-6 border-b border-[#eef1f5] pb-4">
         <h2>{t('cloud')}</h2>
-        <p className="muted">
+        <p className="mb-2 text-[0.9rem] text-text-muted">
           {t('cloudNotConfigured')}{' '}
-          <a href="https://supabase.com" target="_blank" rel="noreferrer">
+          <a className="text-primary" href="https://supabase.com" target="_blank" rel="noreferrer">
             supabase.com
           </a>
           , {t('cloudSetup')} <code>supabase/schema.sql</code>, {t('cloudBuild')}
         </p>
-        <pre className="env-pre">
+        <pre className="my-2 overflow-x-auto break-all rounded-lg bg-[#eef1f8] px-3 py-2.5 text-[0.72rem] whitespace-pre-wrap text-text">
           {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
-        <p className="muted">
+        <p className="mb-2 text-[0.9rem] text-text-muted">
           {t('cloudLocal')} <code>.env.local</code>. {t('cloudPages')}
         </p>
       </section>
@@ -145,19 +145,19 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
   }
 
   return (
-    <section className="settings-block">
+    <section className="mb-6 border-b border-[#eef1f5] pb-4">
       <h2>{t('cloud')}</h2>
-      <p className="muted">{t('cloudDescription')}</p>
+      <p className="mb-2 text-[0.9rem] text-text-muted">{t('cloudDescription')}</p>
 
       {user ? (
         <>
           <p>
             {t('signedInAs')} <strong>{user.email}</strong>
           </p>
-          <div className="btn-row" style={{ marginTop: 8 }}>
+          <div className="mt-2 flex gap-2.5">
             <button
               type="button"
-              className="btn-secondary"
+              className="flex-1 rounded-[10px] bg-[#eef1f8] px-4 py-3 font-semibold text-primary disabled:opacity-60"
               disabled={busy}
               onClick={() => void syncNow()}
             >
@@ -165,7 +165,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             </button>
             <button
               type="button"
-              className="btn-danger"
+              className="flex-1 rounded-[10px] bg-[#fdecea] px-4 py-3 font-semibold text-danger disabled:opacity-60"
               disabled={busy}
               onClick={() => void logout()}
             >
@@ -173,31 +173,37 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             </button>
           </div>
           {syncMsg && (
-            <div className={typeof syncMsg === 'object' ? 'import-error' : 'import-result'}>
+            <div
+              className={
+                typeof syncMsg === 'object'
+                  ? 'mt-2 rounded-lg bg-[#fdecea] px-3 py-2.5 text-[0.85rem] text-danger'
+                  : 'mt-2 rounded-lg bg-[#e8f8ef] px-3 py-2.5 text-[0.85rem] text-[#1e7a45]'
+              }
+            >
               {typeof syncMsg === 'object' ? `${t('syncError')} ${syncMsg.error}` : t(syncMsg)}
             </div>
           )}
         </>
       ) : (
         <>
-          <div className="period-tabs" style={{ marginBottom: 12 }}>
+          <div className="mb-3 flex rounded-[10px] bg-[#eef1f8] p-0.75">
             <button
               type="button"
-              className={mode === 'login' ? 'active' : ''}
+              className={`flex-1 rounded-lg p-2 text-[0.9rem] text-text-muted ${mode === 'login' ? 'bg-white font-semibold text-primary shadow-[0_1px_4px_rgba(0,0,0,0.06)]' : ''}`}
               onClick={() => setMode('login')}
             >
               {t('signIn')}
             </button>
             <button
               type="button"
-              className={mode === 'signup' ? 'active' : ''}
+              className={`flex-1 rounded-lg p-2 text-[0.9rem] text-text-muted ${mode === 'signup' ? 'bg-white font-semibold text-primary shadow-[0_1px_4px_rgba(0,0,0,0.06)]' : ''}`}
               onClick={() => setMode('signup')}
             >
               {t('signUp')}
             </button>
           </div>
           <input
-            className="field"
+            className="w-full rounded-[10px] border-[1.5px] border-primary bg-white px-3.5 py-3 outline-none focus:shadow-[0_0_0_3px_rgba(107,127,232,0.2)]"
             type="email"
             autoComplete="email"
             placeholder="Email"
@@ -205,8 +211,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="field"
-            style={{ marginTop: 8 }}
+            className="mt-2 w-full rounded-[10px] border-[1.5px] border-primary bg-white px-3.5 py-3 outline-none focus:shadow-[0_0_0_3px_rgba(107,127,232,0.2)]"
             type="password"
             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
             placeholder={t('password')}
@@ -215,8 +220,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           />
           <button
             type="button"
-            className="btn-primary"
-            style={{ marginTop: 12 }}
+            className="mt-3 w-full rounded-[10px] bg-primary p-3.5 font-semibold tracking-[0.04em] text-white active:bg-primary-dark disabled:opacity-60"
             disabled={busy}
             onClick={() => void submit()}
           >
@@ -224,8 +228,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           </button>
           <button
             type="button"
-            className="btn-secondary"
-            style={{ marginTop: 8, width: '100%' }}
+            className="mt-2 w-full rounded-[10px] bg-[#eef1f8] px-4 py-3 font-semibold text-primary disabled:opacity-60"
             disabled={busy}
             onClick={() => void loginWithGoogle()}
           >
@@ -234,8 +237,16 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
         </>
       )}
 
-      {msg && <div className="import-result">{msg}</div>}
-      {err && <div className="import-error">{err}</div>}
+      {msg && (
+        <div className="mt-2 rounded-lg bg-[#e8f8ef] px-3 py-2.5 text-[0.85rem] text-[#1e7a45]">
+          {msg}
+        </div>
+      )}
+      {err && (
+        <div className="mt-2 rounded-lg bg-[#fdecea] px-3 py-2.5 text-[0.85rem] text-danger">
+          {err}
+        </div>
+      )}
     </section>
   )
 }

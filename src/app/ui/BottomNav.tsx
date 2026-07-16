@@ -9,10 +9,13 @@ interface Props {
 export function BottomNav({ tab, onChange }: Props) {
   const { t } = useI18n()
   return (
-    <nav className="bottom-nav" aria-label={t('mainNavigation')}>
+    <nav
+      className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-[480px] -translate-x-1/2 bg-primary pt-2 pr-0 pb-[calc(8px+env(safe-area-inset-bottom,0px))] pl-0"
+      aria-label={t('mainNavigation')}
+    >
       <button
         type="button"
-        className={tab === 'stats' ? 'active' : ''}
+        className={`flex flex-1 flex-col items-center gap-0.5 p-1 text-[0.7rem] text-nav-inactive ${tab === 'stats' ? 'font-semibold text-white' : ''}`}
         onClick={() => onChange('stats')}
       >
         <StatsIcon />
@@ -20,7 +23,7 @@ export function BottomNav({ tab, onChange }: Props) {
       </button>
       <button
         type="button"
-        className={tab === 'calendar' ? 'active' : ''}
+        className={`flex flex-1 flex-col items-center gap-0.5 p-1 text-[0.7rem] text-nav-inactive ${tab === 'calendar' ? 'font-semibold text-white' : ''}`}
         onClick={() => onChange('calendar')}
       >
         <CalendarIcon />
@@ -28,7 +31,7 @@ export function BottomNav({ tab, onChange }: Props) {
       </button>
       <button
         type="button"
-        className={tab === 'settings' ? 'active' : ''}
+        className={`flex flex-1 flex-col items-center gap-0.5 p-1 text-[0.7rem] text-nav-inactive ${tab === 'settings' ? 'font-semibold text-white' : ''}`}
         onClick={() => onChange('settings')}
       >
         <SettingsIcon />
