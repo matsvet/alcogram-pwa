@@ -47,23 +47,7 @@ commit service-role credentials. Do not place personal data under `public/`:
 it is deployed publicly. Apply backend schema changes deliberately in
 `supabase/schema.sql`.
 
-## Commits & Pull Requests
+## Collaboration Conventions
 
-Recent history uses short, imperative, descriptive subjects, such as `Add
-Supabase cloud sync for cross-device use`. Keep each commit focused. Pull
-requests should state the user-visible change, list validation commands, link
-the relevant issue when present, and include screenshots or a short recording
-for UI changes. Call out any required Supabase migration or environment change.
-
-When the user asks for a commit description, commit title, or commit text,
-reply in Russian using this structure: a concise summary on the first line,
-then a blank line and 2-4 short bullets that clarify the changes. Use a hyphen
-for each bullet. Put the entire response in a plain-text code block so the
-user can copy it with one action.
-
-```text
-Краткое описание изменения
-
-- Первая важная деталь
-- Вторая важная деталь
-```
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for branch names, commit text, pull
+requests, and Feature-Sliced Design conventions.
