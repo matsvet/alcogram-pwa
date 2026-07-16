@@ -1,24 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { getSupabase, isCloudConfigured } from '../lib/supabase'
 import { fullSync, onSyncStatus } from '../sync/sync'
 
 interface Props {
   onSynced: () => void
-}
-
-const PERSONAL_MIGRATION_HASH = '#sober-days-5c4a75a0'
-const PERSONAL_MIGRATION_EMAIL = 'misvetozarov@gmail.com'
-
-function getPersonalSoberDates(): string[] {
-  const dates: string[] = []
-  const cursor = new Date('2023-01-01T00:00:00Z')
-  const end = new Date('2026-03-31T00:00:00Z')
-  while (cursor <= end) {
-    dates.push(cursor.toISOString().slice(0, 10))
-    cursor.setUTCDate(cursor.getUTCDate() + 1)
-  }
-  return dates
 }
 
 export function CloudAuth({ onSynced }: Props) {
@@ -31,8 +17,6 @@ export function CloudAuth({ onSynced }: Props) {
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<string | null>(null)
-  const [personalMigrationMsg, setPersonalMigrationMsg] = useState<string | null>(null)
-  const personalMigrationStarted = useRef(false)
 
   useEffect(() => {
     if (!configured) return
@@ -59,77 +43,6 @@ export function CloudAuth({ onSynced }: Props) {
       }
     })
   }, [session?.user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (
-      personalMigrationStarted.current ||
-      window.location.hash !== PERSONAL_MIGRATION_HASH ||
-      session?.user.email !== PERSONAL_MIGRATION_EMAIL
-    ) {
-      return
-    }
-    const supabase = getSupabase()
-    if (!supabase) return
-
-    personalMigrationStarted.current = true
-    setPersonalMigrationMsg('Перенос отметок «не пил»…')
-    void (async () => {
-      const userId = session.user.id
-      const [drinksResult, soberResult] = await Promise.all([
-        supabase
-          .from('drinks')
-          .select('date')
-          .eq('user_id', userId)
-          .eq('deleted', false)
-          .gte('date', '2023-01-01')
-          .lte('date', '2026-03-31'),
-        supabase
-          .from('sober_days')
-          .select('date, deleted')
-          .eq('user_id', userId)
-          .gte('date', '2023-01-01')
-          .lte('date', '2026-03-31'),
-      ])
-      if (drinksResult.error) throw drinksResult.error
-      if (soberResult.error) throw soberResult.error
-
-      const drinkDates = new Set(drinksResult.data.map((row) => row.date))
-      const soberDays = new Map(
-        soberResult.data.map((row) => [row.date, row.deleted]),
-      )
-      const now = Date.now()
-      const rows = getPersonalSoberDates()
-        .filter((date) => !drinkDates.has(date) && soberDays.get(date) !== false)
-        .map((date) => ({
-          user_id: userId,
-          date,
-          created_at: now,
-          updated_at: now,
-          source: 'manual',
-          deleted: false,
-        }))
-
-      for (let i = 0; i < rows.length; i += 200) {
-        const { error } = await supabase
-          .from('sober_days')
-          .upsert(rows.slice(i, i + 200), { onConflict: 'user_id,date' })
-        if (error) throw error
-      }
-
-      const { count, error } = await supabase
-        .from('sober_days')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('deleted', false)
-        .gte('date', '2023-01-01')
-        .lte('date', '2026-03-31')
-      if (error) throw error
-      setPersonalMigrationMsg(`Добавлено: ${rows.length}. Всего отметок: ${count ?? 0}`)
-      onSynced()
-    })().catch((e) => {
-      setPersonalMigrationMsg(`Ошибка переноса: ${e instanceof Error ? e.message : String(e)}`)
-    })
-  }, [session, onSynced])
 
   if (!configured) {
     return (
@@ -263,11 +176,6 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           {syncMsg && (
             <div className={syncMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
               {syncMsg}
-            </div>
-          )}
-          {personalMigrationMsg && (
-            <div className={personalMigrationMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
-              {personalMigrationMsg}
             </div>
           )}
         </>
