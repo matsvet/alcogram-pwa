@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { countDrinks, getAllDrinks } from '@/shared/db/diary'
-import {
-  drinksToCsv,
-  importDrinks,
-  parseImportFile,
-} from '../lib/importExport'
+import { drinksToCsv, importDrinks, parseImportFile } from '../lib/importExport'
 import type { ImportMode, ImportResult } from '../model/import'
 import { CloudAuth } from './CloudAuth'
 
@@ -23,6 +19,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     countDrinks().then(setCount)
   }, [refreshKey])
@@ -70,16 +67,13 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
           <p>
             Записей в базе: <strong>{count}</strong>
           </p>
-          <p className="muted">
-            Версия {APP_VERSION} · IndexedDB + опционально Supabase
-          </p>
+          <p className="muted">Версия {APP_VERSION} · IndexedDB + опционально Supabase</p>
         </section>
 
         <section className="settings-block">
           <h2>Импорт файла</h2>
           <p className="muted">
-            CSV или JSON. После импорта при входе в облако данные уйдут на
-            сервер.
+            CSV или JSON. После импорта при входе в облако данные уйдут на сервер.
           </p>
           <div className="mode-row">
             <label>
@@ -115,8 +109,8 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
           {busy && <p className="muted">Импорт…</p>}
           {result && (
             <div className="import-result">
-              Добавлено: {result.added}, пропущено: {result.skipped}, невалидных:{' '}
-              {result.invalid} (из {result.total})
+              Добавлено: {result.added}, пропущено: {result.skipped}, невалидных: {result.invalid}{' '}
+              (из {result.total})
             </div>
           )}
           {error && <div className="import-error">{error}</div>}
@@ -134,8 +128,8 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
         <section className="settings-block">
           <h2>Установка PWA</h2>
           <p className="muted">
-            iPhone: Safari → Поделиться → На экран «Домой». Android: Chrome →
-            Установить. Offline shell + облако при сети.
+            iPhone: Safari → Поделиться → На экран «Домой». Android: Chrome → Установить. Offline
+            shell + облако при сети.
           </p>
         </section>
       </div>

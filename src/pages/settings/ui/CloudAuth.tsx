@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 import { fullSync, onSyncStatus } from '@/features/cloud-sync'
 import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 
@@ -42,7 +42,7 @@ export function CloudAuth({ onSynced }: Props) {
         setSyncMsg(`Ошибка синхронизации: ${r.error}`)
       }
     })
-  }, [session?.user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session, onSynced])
 
   if (!configured) {
     return (
@@ -56,12 +56,12 @@ export function CloudAuth({ onSynced }: Props) {
           , выполни SQL из <code>supabase/schema.sql</code>, добавь в сборку:
         </p>
         <pre className="env-pre">
-{`VITE_SUPABASE_URL=https://xxxx.supabase.co
+          {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
         <p className="muted">
-          Локально: файл <code>.env.local</code>. На GitHub Pages: Secrets + Actions.
-          Пока облако выкл. – всё только в IndexedDB.
+          Локально: файл <code>.env.local</code>. На GitHub Pages: Secrets + Actions. Пока облако
+          выкл. – всё только в IndexedDB.
         </p>
       </section>
     )
@@ -86,7 +86,9 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           password,
         })
         if (error) throw error
-        setMsg('Аккаунт создан. Если включено подтверждение email – проверь почту, иначе можно сразу войти.')
+        setMsg(
+          'Аккаунт создан. Если включено подтверждение email – проверь почту, иначе можно сразу войти.',
+        )
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -146,9 +148,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
   return (
     <section className="settings-block">
       <h2>Облако (Supabase)</h2>
-      <p className="muted">
-        Offline-first + синхронизация. Один аккаунт на iPhone и Android.
-      </p>
+      <p className="muted">Offline-first + синхронизация. Один аккаунт на iPhone и Android.</p>
 
       {user ? (
         <>

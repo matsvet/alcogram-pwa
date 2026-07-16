@@ -69,6 +69,7 @@ function SingleIcon({
   if (k === 'empty') {
     return (
       <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon empty" aria-hidden>
+        <title>Пустой бокал</title>
         <path
           d="M12 6h16l-1.5 28a6 6 0 0 1-6 5.5h-1a6 6 0 0 1-6-5.5L12 6z"
           fill="none"
@@ -83,6 +84,7 @@ function SingleIcon({
   if (k === 'beer') {
     return (
       <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon beer" aria-hidden>
+        <title>Пиво</title>
         <path
           d="M10 8h16l-1 30a7 7 0 0 1-7 6.5h0a7 7 0 0 1-7-6.5L10 8z"
           fill="#F5C842"
@@ -90,7 +92,12 @@ function SingleIcon({
           strokeWidth="1.4"
         />
         <path d="M12 8c1 3 2 4 6 4s5-1 6-4" fill="#FFF8E0" opacity="0.7" />
-        <path d="M26 14h4a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-3.5" fill="none" stroke="#5B7C99" strokeWidth="1.4" />
+        <path
+          d="M26 14h4a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-3.5"
+          fill="none"
+          stroke="#5B7C99"
+          strokeWidth="1.4"
+        />
         <path d="M9 8h18" stroke="#5B7C99" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     )
@@ -99,6 +106,7 @@ function SingleIcon({
   if (k === 'wine') {
     return (
       <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon wine" aria-hidden>
+        <title>Вино</title>
         <path
           d="M12 6h16c0 8-4 14-8 16v12h4v3H16v-3h4V22c-4-2-8-8-8-16z"
           fill="none"
@@ -113,6 +121,7 @@ function SingleIcon({
   // spirit / shot
   return (
     <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon spirit" aria-hidden>
+      <title>Крепкий алкоголь</title>
       <path
         d="M14 8h12l-2 28a5 5 0 0 1-5 4.5h0a5 5 0 0 1-5-4.5L14 8z"
         fill="#E8E0D0"

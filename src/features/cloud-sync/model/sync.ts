@@ -1,4 +1,5 @@
 import type { AlcoholType, Drink, SoberDay } from '@/shared/api/diary'
+import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 import {
   bulkPutDrinksSilent,
   bulkPutSoberSilent,
@@ -8,7 +9,6 @@ import {
   getSyncQueue,
 } from '@/shared/db/diary'
 import { chooseSyncWinner, type SyncQueueItem } from '@/shared/db/syncQueue'
-import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 
 export type SyncResult =
   | { ok: true; drinksUp: number; drinksDown: number; soberUp: number; soberDown: number }
@@ -128,11 +128,7 @@ export async function fullSync(): Promise<SyncResult> {
       if (!local) continue
 
       const queueItem = drinkQueue.get(id)
-      const decision = chooseSyncWinner(
-        local.updatedAt,
-        remote?.updated_at,
-        Boolean(queueItem),
-      )
+      const decision = chooseSyncWinner(local.updatedAt, remote?.updated_at, Boolean(queueItem))
       if (decision.winner === 'local') {
         mergedDrinks.push(local)
         if (decision.upload) {
@@ -151,9 +147,10 @@ export async function fullSync(): Promise<SyncResult> {
     let drinksUp = 0
     if (toPushDrinks.length) {
       for (const chunk of chunkArr(toPushDrinks, 200)) {
-        const { error } = await supabase
-          .from('drinks')
-          .upsert(chunk.map((item) => item.row), { onConflict: 'id' })
+        const { error } = await supabase.from('drinks').upsert(
+          chunk.map((item) => item.row),
+          { onConflict: 'id' },
+        )
         if (error) return fail(error.message)
         drinksUp += chunk.length
         clearQueue.push(...chunk.flatMap((item) => (item.queue ? [item.queue] : [])))
@@ -188,11 +185,7 @@ export async function fullSync(): Promise<SyncResult> {
       if (!local) continue
 
       const queueItem = soberQueue.get(date)
-      const decision = chooseSyncWinner(
-        local.updatedAt,
-        remote?.updated_at,
-        Boolean(queueItem),
-      )
+      const decision = chooseSyncWinner(local.updatedAt, remote?.updated_at, Boolean(queueItem))
       if (decision.winner === 'local') {
         mergedSober.push(local)
         if (decision.upload) {
@@ -211,9 +204,10 @@ export async function fullSync(): Promise<SyncResult> {
     let soberUp = 0
     if (toPushSober.length) {
       for (const chunk of chunkArr(toPushSober, 200)) {
-        const { error } = await supabase
-          .from('sober_days')
-          .upsert(chunk.map((item) => item.row), { onConflict: 'user_id,date' })
+        const { error } = await supabase.from('sober_days').upsert(
+          chunk.map((item) => item.row),
+          { onConflict: 'user_id,date' },
+        )
         if (error) return fail(error.message)
         soberUp += chunk.length
         clearQueue.push(...chunk.flatMap((item) => (item.queue ? [item.queue] : [])))

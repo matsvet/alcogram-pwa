@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Drink } from '@/shared/api/diary'
-import {
-  getDrinksByDate,
-  isSoberDay,
-  markSoberDay,
-  unmarkSoberDay,
-} from '@/shared/db/diary'
+import { getDrinksByDate, isSoberDay, markSoberDay, unmarkSoberDay } from '@/shared/db/diary'
 import { formatDayTitle } from '@/shared/lib/date'
 import { formatPrice, formatVolume } from '@/shared/lib/volume'
 import { Modal } from '@/shared/ui/Modal'
@@ -19,17 +14,12 @@ interface Props {
   refreshKey: number
 }
 
-export function DayModal({
-  date,
-  onClose,
-  onOpenDrink,
-  onChanged,
-  refreshKey,
-}: Props) {
+export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: Props) {
   const [drinks, setDrinks] = useState<Drink[]>([])
   const [manualSober, setManualSober] = useState(false)
   const [busy, setBusy] = useState(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     getDrinksByDate(date).then(setDrinks)
     isSoberDay(date).then(setManualSober)
@@ -75,12 +65,7 @@ export function DayModal({
 
         <div className="drink-cards">
           {drinks.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              className="drink-card"
-              onClick={() => onOpenDrink(d)}
-            >
+            <button key={d.id} type="button" className="drink-card" onClick={() => onOpenDrink(d)}>
               <DrinkIcon alcohol={d.alcohol} size="lg" />
               <div className="drink-card-meta">
                 <span className="vol">{formatVolume(d.amount, d.unit)}</span>
@@ -121,11 +106,7 @@ export function DayModal({
             Снять отметку «не пил»
           </button>
         )}
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => onOpenDrink(null)}
-        >
+        <button type="button" className="btn-primary" onClick={() => onOpenDrink(null)}>
           ADD DRINK
         </button>
       </div>

@@ -61,9 +61,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
       } else {
         const existing = await getDrinksByDate(date)
         const nextIndex =
-          existing.length === 0
-            ? 1
-            : Math.max(...existing.map((d) => d.drinkIndex)) + 1
+          existing.length === 0 ? 1 : Math.max(...existing.map((d) => d.drinkIndex)) + 1
         const created = createManualDrink({
           date,
           alcohol,
@@ -140,11 +138,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <select
-              className="field-suffix"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-            >
+            <select className="field-suffix" value={unit} onChange={(e) => setUnit(e.target.value)}>
               {UNITS.map((u) => (
                 <option key={u} value={u}>
                   {u}
@@ -193,12 +187,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={save}
-          disabled={busy}
-        >
+        <button type="button" className="btn-primary" onClick={save} disabled={busy}>
           SAVE
         </button>
       </div>

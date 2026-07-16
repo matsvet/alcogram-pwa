@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 
 interface Props {
   title: string
@@ -17,7 +17,9 @@ export function Modal({ title, onClose, children, leftAction }: Props) {
   }, [onClose])
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: The backdrop is decorative; the close button and Escape provide keyboard alternatives.
     <div className="modal-overlay" onClick={onClose} role="presentation">
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: This only prevents clicks on dialog content from reaching the backdrop. */}
       <div
         className="modal-sheet"
         role="dialog"

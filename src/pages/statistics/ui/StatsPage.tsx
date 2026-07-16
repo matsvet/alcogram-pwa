@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
 import { monthName } from '@/shared/lib/date'
-import { computeStats, periodBounds, type PeriodStats } from '../model/statistics'
+import { computeStats, type PeriodStats, periodBounds } from '../model/statistics'
 
 type Period = 'month' | 'year' | 'all'
 
@@ -15,13 +15,12 @@ export function StatsPage({ year, month, refreshKey }: Props) {
   const [period, setPeriod] = useState<Period>('month')
   const [stats, setStats] = useState<PeriodStats | null>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       const bounds = periodBounds(period, year, month)
-      const drinks = bounds
-        ? await getDrinksInRange(bounds.from, bounds.to)
-        : await getAllDrinks()
+      const drinks = bounds ? await getDrinksInRange(bounds.from, bounds.to) : await getAllDrinks()
       if (!cancelled) setStats(computeStats(drinks))
     })()
     return () => {
@@ -64,9 +63,7 @@ export function StatsPage({ year, month, refreshKey }: Props) {
             <div className="stat-grid">
               <div className="stat-box">
                 <div className="stat-value">
-                  {stats.totalEthanolMl > 0
-                    ? `${(stats.totalEthanolMl / 1000).toFixed(2)} l`
-                    : '—'}
+                  {stats.totalEthanolMl > 0 ? `${(stats.totalEthanolMl / 1000).toFixed(2)} l` : '—'}
                 </div>
                 <div className="stat-name">Этанол</div>
                 {!stats.totalEthanolKnown && stats.totalEthanolMl > 0 && (
@@ -102,10 +99,7 @@ export function StatsPage({ year, month, refreshKey }: Props) {
                     <span className="muted">{t.count}×</span>
                   </div>
                   <div className="bar-track">
-                    <div
-                      className="bar-fill"
-                      style={{ width: `${(t.count / maxCount) * 100}%` }}
-                    />
+                    <div className="bar-fill" style={{ width: `${(t.count / maxCount) * 100}%` }} />
                   </div>
                 </div>
               ))}

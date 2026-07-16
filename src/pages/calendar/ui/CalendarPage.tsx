@@ -12,27 +12,21 @@ interface Props {
   refreshKey: number
 }
 
-export function CalendarPage({
-  year,
-  month,
-  onYearMonth,
-  onSelectDay,
-  refreshKey,
-}: Props) {
+export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey }: Props) {
   const [byDate, setByDate] = useState<Map<string, Drink[]>>(new Map())
   const [soberDates, setSoberDates] = useState<Set<string>>(new Set())
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
   useEffect(() => {
     let cancelled = false
-    Promise.all([
-      getDatesWithDrinks(year, month),
-      getSoberDatesInMonth(year, month),
-    ]).then(([map, sober]) => {
-      if (!cancelled) {
-        setByDate(map)
-        setSoberDates(sober)
-      }
-    })
+    Promise.all([getDatesWithDrinks(year, month), getSoberDatesInMonth(year, month)]).then(
+      ([map, sober]) => {
+        if (!cancelled) {
+          setByDate(map)
+          setSoberDates(sober)
+        }
+      },
+    )
     return () => {
       cancelled = true
     }
@@ -49,10 +43,10 @@ export function CalendarPage({
 
   const totalDays = daysInMonth(year, month)
   const firstWeekday = weekdayMon0(toDateStr(year, month, 1))
-  const cells: (number | null)[] = []
-  for (let i = 0; i < firstWeekday; i++) cells.push(null)
+  const cells: (number | string)[] = []
+  for (let i = 0; i < firstWeekday; i++) cells.push(`empty-${i}`)
   for (let d = 1; d <= totalDays; d++) cells.push(d)
-  while (cells.length % 7 !== 0) cells.push(null)
+  while (cells.length % 7 !== 0) cells.push(`empty-${cells.length}`)
 
   return (
     <div className="page calendar-page">
@@ -85,17 +79,14 @@ export function CalendarPage({
         </div>
 
         <div className="days-grid">
-          {cells.map((day, idx) => {
-            if (day == null) {
-              return <div key={`e-${idx}`} className="day-cell empty-slot" />
+          {cells.map((cell) => {
+            if (typeof cell === 'string') {
+              return <div key={cell} className="day-cell empty-slot" />
             }
+            const day = cell
             const date = toDateStr(year, month, day)
             const drinks = byDate.get(date) ?? []
-            const visual = drinks.length > 0
-              ? 'drinks'
-              : soberDates.has(date)
-                ? 'sober'
-                : 'blank'
+            const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
             return (
               <button
                 key={date}
@@ -104,11 +95,7 @@ export function CalendarPage({
                 onClick={() => onSelectDay(date)}
               >
                 {visual === 'drinks' && (
-                  <DrinkIcon
-                    stack={drinks}
-                    alcohol={drinks[0]?.alcohol}
-                    size="sm"
-                  />
+                  <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
                 )}
                 {visual === 'sober' && <DrinkIcon empty size="sm" />}
                 {visual === 'blank' && <span className="day-icon-spacer" />}
