@@ -30,8 +30,8 @@
 ```bash
 cd alcogram-pwa
 cp .env.example .env.local   # если уже есть Supabase
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Облако (Supabase) – 10 минут

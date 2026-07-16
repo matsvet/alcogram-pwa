@@ -14,18 +14,18 @@ through their `index.ts` public API. Static files and PWA icons are in
 
 ## Build, Test, and Development Commands
 
-- `npm install`: install the locked dependencies from `package-lock.json`.
-- `npm run dev`: start the Vite development server.
-- `npm run lint`: run Biome linting over TypeScript and React code.
-- `npm run format`: format the codebase with Biome.
-- `npm run check`: run Biome linting, formatting, and import checks.
-- `npm run check:write`: apply safe Biome fixes across the codebase.
-- `npm run build`: type-check with `tsc -b` and create the production bundle.
-- `npm run preview`: serve the built bundle locally after `npm run build`.
+- `pnpm install --frozen-lockfile`: install the locked dependencies from `pnpm-lock.yaml`.
+- `pnpm dev`: start the Vite development server.
+- `pnpm lint`: run Biome linting over TypeScript and React code.
+- `pnpm format`: format the codebase with Biome.
+- `pnpm check`: run Biome linting, formatting, and import checks.
+- `pnpm check:write`: apply safe Biome fixes across the codebase.
+- `pnpm build`: type-check with `tsc -b` and create the production bundle.
+- `pnpm preview`: serve the built bundle locally after `pnpm build`.
 
-There is no automated test suite yet. At minimum, run `npm run check` and
-`npm run build` before submitting changes; the pre-commit hook also runs
-`npm run check`. Then exercise the changed flow in the browser. For IndexedDB
+There is no automated test suite yet. At minimum, run `pnpm check` and
+`pnpm build` before submitting changes; the pre-commit hook also runs
+`pnpm check`. Then exercise the changed flow in the browser. For IndexedDB
 or sync changes, verify create, edit, delete, and reload behavior; sync uses
 soft deletes and last-write-wins timestamps.
 
