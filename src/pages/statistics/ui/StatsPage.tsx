@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
-import { monthName } from '@/shared/lib/date'
+import { daysInMonth, monthName } from '@/shared/lib/date'
 import { alcoholName, useI18n } from '@/shared/lib/i18n'
 import { PageCard } from '@/shared/ui'
 import { computeStats, type PeriodStats, periodBounds } from '../model/statistics'
@@ -41,6 +41,19 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
         : t('allTime')
 
   const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
+  const periodDays =
+    period === 'month'
+      ? daysInMonth(year, month)
+      : period === 'year'
+        ? daysInMonth(year, 2) === 29
+          ? 366
+          : 365
+        : null
+  const drinkingDayPercentage =
+    periodDays == null ? null : ((stats?.drinkingDays ?? 0) / periodDays) * 100
+  const formattedDrinkingDayPercentage = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 1,
+  }).format(drinkingDayPercentage ?? 0)
 
   const previousPeriod = () => {
     if (period === 'year') onYearMonth(year - 1, month)
@@ -147,6 +160,11 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
               <div className={styles.stat}>
                 <div className={styles.statValue}>{stats.drinkingDays}</div>
                 <div className={styles.statName}>{t('drinkingDays')}</div>
+                {drinkingDayPercentage != null && (
+                  <div className={styles.statHint}>
+                    {formattedDrinkingDayPercentage}% {t('ofPeriodDays')}
+                  </div>
+                )}
               </div>
               <div className={styles.stat}>
                 <div className={styles.statValue}>{stats.totalDrinks}</div>
