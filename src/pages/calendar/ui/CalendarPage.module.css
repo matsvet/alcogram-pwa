@@ -2,6 +2,12 @@
   min-height: 100%;
 }
 
+.calendar {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 136px);
+}
+
 .monthNavigation {
   display: flex;
   align-items: center;
@@ -98,7 +104,8 @@
   display: block;
   width: 100%;
   min-height: 40px;
-  margin-top: 16px;
+  padding-top: 10px;
+  margin-top: auto;
   color: var(--color-primary);
   font-weight: 600;
   background: rgb(107 127 232 / 8%);

@@ -56,78 +56,80 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
   return (
     <div className={styles.root}>
       <PageCard>
-        <div className={styles.monthNavigation}>
+        <div className={styles.calendar}>
+          <div className={styles.monthNavigation}>
+            <button
+              type="button"
+              className={styles.monthButton}
+              onClick={prev}
+              aria-label={t('previousMonth')}
+            >
+              ‹
+            </button>
+            <input
+              type="month"
+              className={styles.monthPicker}
+              value={`${year}-${String(month).padStart(2, '0')}`}
+              onChange={(event) => {
+                const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
+                onYearMonth(nextYear, nextMonth)
+              }}
+              aria-label={t('chooseMonth')}
+            />
+            <button
+              type="button"
+              className={styles.monthButton}
+              onClick={next}
+              aria-label={t('nextMonth')}
+            >
+              ›
+            </button>
+          </div>
+
+          <div className={styles.weekdays}>
+            {weekdays(locale).map((w) => (
+              <div key={w}>{w}</div>
+            ))}
+          </div>
+
+          <div className={styles.days}>
+            {cells.map((cell) => {
+              if (typeof cell === 'string') {
+                return <div key={cell} className={styles.emptySlot} />
+              }
+              const day = cell
+              const date = toDateStr(year, month, day)
+              const drinks = byDate.get(date) ?? []
+              const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
+              return (
+                <button
+                  key={date}
+                  type="button"
+                  className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''} ${date === today ? styles.isToday : ''}`}
+                  onClick={() => onSelectDay(date)}
+                >
+                  {visual === 'drinks' && (
+                    <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
+                  )}
+                  {visual === 'sober' && <DrinkIcon empty size="sm" />}
+                  {visual === 'blank' && <span className={styles.iconSpacer} />}
+                  <span className={styles.dayNumber}>{day}</span>
+                </button>
+              )
+            })}
+          </div>
+
           <button
             type="button"
-            className={styles.monthButton}
-            onClick={prev}
-            aria-label={t('previousMonth')}
-          >
-            ‹
-          </button>
-          <input
-            type="month"
-            className={styles.monthPicker}
-            value={`${year}-${String(month).padStart(2, '0')}`}
-            onChange={(event) => {
-              const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
-              onYearMonth(nextYear, nextMonth)
+            className={styles.todayButton}
+            onClick={() => {
+              const date = new Date()
+              onYearMonth(date.getFullYear(), date.getMonth() + 1)
             }}
-            aria-label={t('chooseMonth')}
-          />
-          <button
-            type="button"
-            className={styles.monthButton}
-            onClick={next}
-            aria-label={t('nextMonth')}
           >
-            ›
+            {t('today')}
           </button>
         </div>
-
-        <div className={styles.weekdays}>
-          {weekdays(locale).map((w) => (
-            <div key={w}>{w}</div>
-          ))}
-        </div>
-
-        <div className={styles.days}>
-          {cells.map((cell) => {
-            if (typeof cell === 'string') {
-              return <div key={cell} className={styles.emptySlot} />
-            }
-            const day = cell
-            const date = toDateStr(year, month, day)
-            const drinks = byDate.get(date) ?? []
-            const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
-            return (
-              <button
-                key={date}
-                type="button"
-                className={`${styles.dayCell} ${visual === 'blank' ? styles.isBlank : ''} ${date === today ? styles.isToday : ''}`}
-                onClick={() => onSelectDay(date)}
-              >
-                {visual === 'drinks' && (
-                  <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
-                )}
-                {visual === 'sober' && <DrinkIcon empty size="sm" />}
-                {visual === 'blank' && <span className={styles.iconSpacer} />}
-                <span className={styles.dayNumber}>{day}</span>
-              </button>
-            )
-          })}
-        </div>
-
-        <button
-          type="button"
-          className={styles.todayButton}
-          onClick={() => {
-            const date = new Date()
-            onYearMonth(date.getFullYear(), date.getMonth() + 1)
-          }}
-        >
-          {t('today')}
-        </button>
       </PageCard>
     </div>
   )
