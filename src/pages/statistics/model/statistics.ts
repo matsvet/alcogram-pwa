@@ -8,7 +8,7 @@ export interface PeriodStats {
   currencies: Record<string, number>
   drinkingDays: number
   totalDrinks: number
-  topTypes: { alcohol: string; count: number; ethanolMl: number }[]
+  topTypes: { alcohol: string; count: number; ethanolMl: number; volumeMl: number }[]
 }
 
 export function computeStats(drinks: Drink[]): PeriodStats {
@@ -17,7 +17,7 @@ export function computeStats(drinks: Drink[]): PeriodStats {
   let missingAbv = false
   const currencies: Record<string, number> = {}
   const days = new Set<string>()
-  const byType = new Map<string, { count: number; ethanolMl: number }>()
+  const byType = new Map<string, { count: number; ethanolMl: number; volumeMl: number }>()
 
   for (const d of drinks) {
     days.add(d.date)
@@ -34,8 +34,9 @@ export function computeStats(drinks: Drink[]): PeriodStats {
       currencies[cur] = (currencies[cur] ?? 0) + d.price
     }
 
-    const t = byType.get(d.alcohol) ?? { count: 0, ethanolMl: 0 }
+    const t = byType.get(d.alcohol) ?? { count: 0, ethanolMl: 0, volumeMl: 0 }
     t.count++
+    t.volumeMl += d.amountMl
     if (eth != null) t.ethanolMl += eth
     byType.set(d.alcohol, t)
   }
@@ -43,7 +44,6 @@ export function computeStats(drinks: Drink[]): PeriodStats {
   const topTypes = [...byType.entries()]
     .map(([alcohol, v]) => ({ alcohol, ...v }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 8)
 
   const totalMoney = Object.values(currencies).reduce((a, b) => a + b, 0)
 

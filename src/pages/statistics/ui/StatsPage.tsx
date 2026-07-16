@@ -7,6 +7,7 @@ import { computeStats, type PeriodStats, periodBounds } from '../model/statistic
 import styles from './StatsPage.module.css'
 
 type Period = 'month' | 'year' | 'all'
+type TopTypesMetric = 'count' | 'volume'
 
 interface Props {
   year: number
@@ -18,6 +19,7 @@ interface Props {
 export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
   const { locale, t } = useI18n()
   const [period, setPeriod] = useState<Period>('month')
+  const [topTypesMetric, setTopTypesMetric] = useState<TopTypesMetric>('count')
   const [stats, setStats] = useState<PeriodStats | null>(null)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey intentionally reloads data after a mutation.
@@ -40,7 +42,13 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
         ? String(year)
         : t('allTime')
 
-  const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
+  const topTypes = [...(stats?.topTypes ?? [])]
+    .sort((a, b) => (topTypesMetric === 'count' ? b.count - a.count : b.volumeMl - a.volumeMl))
+    .slice(0, 8)
+  const maxTopValue = Math.max(
+    1,
+    ...topTypes.map((t) => (topTypesMetric === 'count' ? t.count : t.volumeMl)),
+  )
   const periodDays =
     period === 'month'
       ? daysInMonth(year, month)
@@ -54,6 +62,7 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
   const formattedDrinkingDayPercentage = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 1,
   }).format(drinkingDayPercentage ?? 0)
+  const litersFormatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 3 })
 
   const previousPeriod = () => {
     if (period === 'year') onYearMonth(year - 1, month)
@@ -172,22 +181,43 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
               </div>
             </div>
 
-            <h2 className={styles.sectionTitle}>{t('topTypes')}</h2>
+            <div className={styles.topHeader}>
+              <h2 className={styles.sectionTitle}>{t('topTypes')}</h2>
+              <div className={styles.topMetricTabs}>
+                {(['count', 'volume'] as TopTypesMetric[]).map((metric) => (
+                  <button
+                    key={metric}
+                    type="button"
+                    className={`${styles.topMetricTab} ${topTypesMetric === metric ? styles.isActive : ''}`}
+                    onClick={() => setTopTypesMetric(metric)}
+                  >
+                    {metric === 'count' ? t('quantity') : t('liters')}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className={styles.topList}>
-              {stats.topTypes.map((t) => (
-                <div key={t.alcohol} className={styles.topRow}>
-                  <div className={styles.topLabel}>
-                    <span>{alcoholName(t.alcohol, locale)}</span>
-                    <span className={styles.muted}>{t.count}×</span>
+              {topTypes.map((t) => {
+                const value = topTypesMetric === 'count' ? t.count : t.volumeMl
+                return (
+                  <div key={t.alcohol} className={styles.topRow}>
+                    <div className={styles.topLabel}>
+                      <span>{alcoholName(t.alcohol, locale)}</span>
+                      <span className={styles.muted}>
+                        {topTypesMetric === 'count'
+                          ? `${t.count}×`
+                          : `${litersFormatter.format(t.volumeMl / 1000)} ${locale === 'ru' ? 'л' : 'l'}`}
+                      </span>
+                    </div>
+                    <div className={styles.barTrack}>
+                      <div
+                        className={styles.barFill}
+                        style={{ width: `${(value / maxTopValue) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className={styles.barTrack}>
-                    <div
-                      className={styles.barFill}
-                      style={{ width: `${(t.count / maxCount) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </>
         )}
