@@ -28,9 +28,14 @@ const MONTHS_RU = [
   'Декабрь',
 ]
 
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+const WEEKDAYS = {
+  en: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+  ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+}
 
-export { WEEKDAYS }
+export function weekdays(locale: 'en' | 'ru'): string[] {
+  return WEEKDAYS[locale]
+}
 
 export function monthName(month: number, locale: 'en' | 'ru' = 'en'): string {
   const list = locale === 'ru' ? MONTHS_RU : MONTHS_EN
@@ -52,14 +57,14 @@ export function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-export function formatDayTitle(dateStr: string): string {
+export function formatDayTitle(dateStr: string, locale: 'en' | 'ru' = 'en'): string {
   const [, m, d] = dateStr.split('-').map(Number)
-  return `${d} ${MONTHS_EN[m - 1]}`
+  return `${d} ${monthName(m, locale)}`
 }
 
-export function formatDayShort(dateStr: string): string {
+export function formatDayShort(dateStr: string, locale: 'en' | 'ru' = 'en'): string {
   const [, m, d] = dateStr.split('-').map(Number)
-  return `${d} ${MONTHS_EN[m - 1]}`
+  return `${d} ${monthName(m, locale)}`
 }
 
 export function todayStr(): string {

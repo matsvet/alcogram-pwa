@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { countDrinks, getAllDrinks } from '@/shared/db/diary'
+import { useI18n } from '@/shared/lib/i18n'
 import { drinksToCsv, importDrinks, parseImportFile } from '../lib/importExport'
 import type { ImportMode, ImportResult } from '../model/import'
 import { CloudAuth } from './CloudAuth'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function SettingsPage({ refreshKey, onDataChange }: Props) {
+  const { locale, setLocale, t } = useI18n()
   const [count, setCount] = useState(0)
   const [mode, setMode] = useState<ImportMode>('merge')
   const [result, setResult] = useState<ImportResult | null>(null)
@@ -58,23 +60,37 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   return (
     <div className="page settings-page">
       <div className="settings-card">
-        <h1>Settings</h1>
+        <h1>{t('settings')}</h1>
+
+        <section className="settings-block">
+          <label>
+            {t('language')}
+            <select
+              className="field"
+              value={locale}
+              onChange={(event) => setLocale(event.target.value as 'en' | 'ru')}
+            >
+              <option value="en">{t('english')}</option>
+              <option value="ru">{t('russian')}</option>
+            </select>
+          </label>
+        </section>
 
         <CloudAuth onSynced={onDataChange} />
 
         <section className="settings-block">
-          <h2>Данные на устройстве</h2>
+          <h2>{t('deviceData')}</h2>
           <p>
-            Записей в базе: <strong>{count}</strong>
+            {t('recordsInDb')} <strong>{count}</strong>
           </p>
-          <p className="muted">Версия {APP_VERSION} · IndexedDB + опционально Supabase</p>
+          <p className="muted">
+            {t('version')} {APP_VERSION} · {t('optionalSupabase')}
+          </p>
         </section>
 
         <section className="settings-block">
-          <h2>Импорт файла</h2>
-          <p className="muted">
-            CSV или JSON. После импорта при входе в облако данные уйдут на сервер.
-          </p>
+          <h2>{t('importFile')}</h2>
+          <p className="muted">{t('importDescription')}</p>
           <div className="mode-row">
             <label>
               <input
@@ -83,7 +99,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
                 checked={mode === 'merge'}
                 onChange={() => setMode('merge')}
               />{' '}
-              Merge (пропуск дублей)
+              {t('merge')}
             </label>
             <label>
               <input
@@ -92,7 +108,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
                 checked={mode === 'replace'}
                 onChange={() => setMode('replace')}
               />{' '}
-              Replace all
+              {t('replace')}
             </label>
           </div>
           <input
@@ -106,31 +122,28 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
               if (f) void onFile(f)
             }}
           />
-          {busy && <p className="muted">Импорт…</p>}
+          {busy && <p className="muted">{t('importing')}</p>}
           {result && (
             <div className="import-result">
-              Добавлено: {result.added}, пропущено: {result.skipped}, невалидных: {result.invalid}{' '}
-              (из {result.total})
+              {t('added')} {result.added}, {t('skipped')} {result.skipped}, {t('invalid')}{' '}
+              {result.invalid} ({t('from')} {result.total})
             </div>
           )}
           {error && <div className="import-error">{error}</div>}
         </section>
 
         <section className="settings-block">
-          <h2>Экспорт</h2>
+          <h2>{t('export')}</h2>
           <div className="btn-row">
             <button type="button" className="btn-secondary" onClick={() => void exportCsv()}>
-              Экспорт CSV
+              {t('exportCsv')}
             </button>
           </div>
         </section>
 
         <section className="settings-block">
-          <h2>Установка PWA</h2>
-          <p className="muted">
-            iPhone: Safari → Поделиться → На экран «Домой». Android: Chrome → Установить. Offline
-            shell + облако при сети.
-          </p>
+          <h2>{t('installPwa')}</h2>
+          <p className="muted">{t('installDescription')}</p>
         </section>
       </div>
     </div>

@@ -1,13 +1,15 @@
 import type { Session, User } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
-import { fullSync, onSyncStatus } from '@/features/cloud-sync'
+import { fullSync, onSyncStatus, type SyncStatus } from '@/features/cloud-sync'
 import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
+import { useI18n } from '@/shared/lib/i18n'
 
 interface Props {
   onSynced: () => void
 }
 
 export function CloudAuth({ onSynced }: Props) {
+  const { t } = useI18n()
   const configured = isCloudConfigured()
   const [session, setSession] = useState<Session | null>(null)
   const [email, setEmail] = useState('')
@@ -16,7 +18,7 @@ export function CloudAuth({ onSynced }: Props) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [syncMsg, setSyncMsg] = useState<string | null>(null)
+  const [syncMsg, setSyncMsg] = useState<SyncStatus | null>(null)
 
   useEffect(() => {
     if (!configured) return
@@ -39,7 +41,7 @@ export function CloudAuth({ onSynced }: Props) {
       if (r.ok) {
         onSynced()
       } else if (r.error !== 'busy') {
-        setSyncMsg(`Ошибка синхронизации: ${r.error}`)
+        setSyncMsg({ type: 'error', error: r.error })
       }
     })
   }, [session, onSynced])
@@ -47,21 +49,20 @@ export function CloudAuth({ onSynced }: Props) {
   if (!configured) {
     return (
       <section className="settings-block">
-        <h2>Облако (Supabase)</h2>
+        <h2>{t('cloud')}</h2>
         <p className="muted">
-          Не настроено. Создай бесплатный проект на{' '}
+          {t('cloudNotConfigured')}{' '}
           <a href="https://supabase.com" target="_blank" rel="noreferrer">
             supabase.com
           </a>
-          , выполни SQL из <code>supabase/schema.sql</code>, добавь в сборку:
+          , {t('cloudSetup')} <code>supabase/schema.sql</code>, {t('cloudBuild')}
         </p>
         <pre className="env-pre">
           {`VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
         </pre>
         <p className="muted">
-          Локально: файл <code>.env.local</code>. На GitHub Pages: Secrets + Actions. Пока облако
-          выкл. – всё только в IndexedDB.
+          {t('cloudLocal')} <code>.env.local</code>. {t('cloudPages')}
         </p>
       </section>
     )
@@ -75,7 +76,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
     const supabase = getSupabase()
     if (!supabase) return
     if (!email.trim() || password.length < 6) {
-      setErr('Email и пароль (мин. 6 символов)')
+      setErr(t('emailPassword'))
       return
     }
     setBusy(true)
@@ -86,16 +87,14 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
           password,
         })
         if (error) throw error
-        setMsg(
-          'Аккаунт создан. Если включено подтверждение email – проверь почту, иначе можно сразу войти.',
-        )
+        setMsg(t('accountCreated'))
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         })
         if (error) throw error
-        setMsg('Вход выполнен')
+        setMsg(t('signedIn'))
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e))
@@ -109,7 +108,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
     if (!supabase) return
     await supabase.auth.signOut()
     setSession(null)
-    setMsg('Выход')
+    setMsg(t('signedOut'))
   }
 
   const loginWithGoogle = async () => {
@@ -147,13 +146,13 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
 
   return (
     <section className="settings-block">
-      <h2>Облако (Supabase)</h2>
-      <p className="muted">Offline-first + синхронизация. Один аккаунт на iPhone и Android.</p>
+      <h2>{t('cloud')}</h2>
+      <p className="muted">{t('cloudDescription')}</p>
 
       {user ? (
         <>
           <p>
-            Вошёл: <strong>{user.email}</strong>
+            {t('signedInAs')} <strong>{user.email}</strong>
           </p>
           <div className="btn-row" style={{ marginTop: 8 }}>
             <button
@@ -162,7 +161,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               disabled={busy}
               onClick={() => void syncNow()}
             >
-              Синхронизировать
+              {t('sync')}
             </button>
             <button
               type="button"
@@ -170,12 +169,12 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               disabled={busy}
               onClick={() => void logout()}
             >
-              Выйти
+              {t('signOut')}
             </button>
           </div>
           {syncMsg && (
-            <div className={syncMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
-              {syncMsg}
+            <div className={typeof syncMsg === 'object' ? 'import-error' : 'import-result'}>
+              {typeof syncMsg === 'object' ? `${t('syncError')} ${syncMsg.error}` : t(syncMsg)}
             </div>
           )}
         </>
@@ -187,14 +186,14 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               className={mode === 'login' ? 'active' : ''}
               onClick={() => setMode('login')}
             >
-              Вход
+              {t('signIn')}
             </button>
             <button
               type="button"
               className={mode === 'signup' ? 'active' : ''}
               onClick={() => setMode('signup')}
             >
-              Регистрация
+              {t('signUp')}
             </button>
           </div>
           <input
@@ -210,7 +209,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             style={{ marginTop: 8 }}
             type="password"
             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-            placeholder="Пароль (мин. 6)"
+            placeholder={t('password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -221,7 +220,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             disabled={busy}
             onClick={() => void submit()}
           >
-            {mode === 'login' ? 'Войти' : 'Создать аккаунт'}
+            {mode === 'login' ? t('signIn') : t('createAccount')}
           </button>
           <button
             type="button"
@@ -230,7 +229,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
             disabled={busy}
             onClick={() => void loginWithGoogle()}
           >
-            Войти через Google
+            {t('googleSignIn')}
           </button>
         </>
       )}

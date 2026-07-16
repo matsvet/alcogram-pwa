@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAllDrinks, getDrinksInRange } from '@/shared/db/diary'
 import { monthName } from '@/shared/lib/date'
+import { alcoholName, useI18n } from '@/shared/lib/i18n'
 import { computeStats, type PeriodStats, periodBounds } from '../model/statistics'
 
 type Period = 'month' | 'year' | 'all'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function StatsPage({ year, month, refreshKey }: Props) {
+  const { locale, t } = useI18n()
   const [period, setPeriod] = useState<Period>('month')
   const [stats, setStats] = useState<PeriodStats | null>(null)
 
@@ -30,17 +32,17 @@ export function StatsPage({ year, month, refreshKey }: Props) {
 
   const label =
     period === 'month'
-      ? `${monthName(month)} ${year}`
+      ? `${monthName(month, locale)} ${year}`
       : period === 'year'
         ? String(year)
-        : 'Всё время'
+        : t('allTime')
 
   const maxCount = Math.max(1, ...(stats?.topTypes.map((t) => t.count) ?? [1]))
 
   return (
     <div className="page stats-page">
       <div className="stats-card">
-        <h1>Statistics</h1>
+        <h1>{t('statistics')}</h1>
 
         <div className="period-tabs">
           {(['month', 'year', 'all'] as Period[]).map((p) => (
@@ -50,24 +52,26 @@ export function StatsPage({ year, month, refreshKey }: Props) {
               className={period === p ? 'active' : ''}
               onClick={() => setPeriod(p)}
             >
-              {p === 'month' ? 'Месяц' : p === 'year' ? 'Год' : 'Всё'}
+              {p === 'month' ? t('month') : p === 'year' ? t('year') : t('all')}
             </button>
           ))}
         </div>
         <p className="period-label">{label}</p>
 
         {!stats || stats.totalDrinks === 0 ? (
-          <p className="muted center">Нет данных за период</p>
+          <p className="muted center">{t('noPeriodData')}</p>
         ) : (
           <>
             <div className="stat-grid">
               <div className="stat-box">
                 <div className="stat-value">
-                  {stats.totalEthanolMl > 0 ? `${(stats.totalEthanolMl / 1000).toFixed(2)} l` : '—'}
+                  {stats.totalEthanolMl > 0
+                    ? `${(stats.totalEthanolMl / 1000).toFixed(2)} ${locale === 'ru' ? 'л' : 'l'}`
+                    : '—'}
                 </div>
-                <div className="stat-name">Этанол</div>
+                <div className="stat-name">{t('ethanol')}</div>
                 {!stats.totalEthanolKnown && stats.totalEthanolMl > 0 && (
-                  <div className="stat-hint">часть записей без ABV</div>
+                  <div className="stat-hint">{t('missingAbv')}</div>
                 )}
               </div>
               <div className="stat-box">
@@ -78,24 +82,24 @@ export function StatsPage({ year, month, refreshKey }: Props) {
                         .map(([c, v]) => `${Math.round(v)} ${c}`)
                         .join(', ')}
                 </div>
-                <div className="stat-name">Потрачено</div>
+                <div className="stat-name">{t('spent')}</div>
               </div>
               <div className="stat-box">
                 <div className="stat-value">{stats.drinkingDays}</div>
-                <div className="stat-name">Дней с выпивкой</div>
+                <div className="stat-name">{t('drinkingDays')}</div>
               </div>
               <div className="stat-box">
                 <div className="stat-value">{stats.totalDrinks}</div>
-                <div className="stat-name">Напитков</div>
+                <div className="stat-name">{t('drinks')}</div>
               </div>
             </div>
 
-            <h2 className="section-title">Топ типов</h2>
+            <h2 className="section-title">{t('topTypes')}</h2>
             <div className="top-list">
               {stats.topTypes.map((t) => (
                 <div key={t.alcohol} className="top-row">
                   <div className="top-label">
-                    <span>{t.alcohol}</span>
+                    <span>{alcoholName(t.alcohol, locale)}</span>
                     <span className="muted">{t.count}×</span>
                   </div>
                   <div className="bar-track">

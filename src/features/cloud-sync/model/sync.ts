@@ -14,6 +14,8 @@ export type SyncResult =
   | { ok: true; drinksUp: number; drinksDown: number; soberUp: number; soberDown: number }
   | { ok: false; error: string }
 
+export type SyncStatus = 'savedLocally' | 'syncing' | 'synced' | { type: 'error'; error: string }
+
 type RemoteDrink = {
   id: string
   user_id: string
@@ -44,21 +46,21 @@ type RemoteSober = {
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null
 let syncing = false
-const listeners = new Set<(msg: string) => void>()
+const listeners = new Set<(status: SyncStatus) => void>()
 
-export function onSyncStatus(cb: (msg: string) => void): () => void {
+export function onSyncStatus(cb: (status: SyncStatus) => void): () => void {
   listeners.add(cb)
   return () => listeners.delete(cb)
 }
 
-function emit(msg: string) {
-  for (const cb of listeners) cb(msg)
+function emit(status: SyncStatus) {
+  for (const cb of listeners) cb(status)
 }
 
 /** Debounced background sync after local writes. */
 export function scheduleSync(delayMs = 1200): void {
   if (!isCloudConfigured()) return
-  emit('Сохранено на устройстве · ожидает синхронизации')
+  emit('savedLocally')
   if (syncTimer) clearTimeout(syncTimer)
   syncTimer = setTimeout(() => {
     void fullSync()
@@ -74,11 +76,11 @@ export async function fullSync(): Promise<SyncResult> {
 
   if (syncing) return { ok: false, error: 'busy' }
   syncing = true
-  emit('Синхронизация…')
+  emit('syncing')
 
   const fail = (error: string): SyncResult => {
     if (error !== 'not_signed_in' && error !== 'not_configured') {
-      emit(`Ошибка синхронизации: ${error}`)
+      emit({ type: 'error', error })
     }
     return { ok: false, error }
   }
@@ -226,7 +228,7 @@ export async function fullSync(): Promise<SyncResult> {
       soberUp,
       soberDown,
     }
-    emit('Синхронизировано')
+    emit('synced')
     return result
   } catch (e) {
     return fail(e instanceof Error ? e.message : String(e))
