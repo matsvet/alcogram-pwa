@@ -5,7 +5,7 @@ import { formatDayShort } from '@/shared/lib/date'
 import { alcoholName, useI18n } from '@/shared/lib/i18n'
 import { toMl } from '@/shared/lib/volume'
 import { Modal } from '@/shared/ui'
-import { CURRENCIES, createManualDrink, UNITS } from '../model/drink'
+import { CURRENCIES, createManualDrink, DEFAULT_ABV_BY_ALCOHOL, UNITS } from '../model/drink'
 import styles from './DrinkForm.module.css'
 import { DrinkIcon } from './DrinkIcon'
 
@@ -22,11 +22,19 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
   const [alcohol, setAlcohol] = useState<AlcoholType>(drink?.alcohol ?? 'Beer')
   const [amount, setAmount] = useState(drink ? String(drink.amount) : '')
   const [unit, setUnit] = useState(drink?.unit ?? 'l')
-  const [abv, setAbv] = useState(drink?.abv != null ? String(drink.abv) : '')
+  const [abv, setAbv] = useState(() => {
+    if (drink) return drink.abv != null ? String(drink.abv) : ''
+    return defaultAbv('Beer')
+  })
   const [price, setPrice] = useState(drink?.price != null ? String(drink.price) : '')
   const [currency, setCurrency] = useState(drink?.currency ?? '₽')
   const [notes, setNotes] = useState(drink?.notes ?? '')
   const [busy, setBusy] = useState(false)
+
+  const changeAlcohol = (nextAlcohol: AlcoholType) => {
+    setAlcohol(nextAlcohol)
+    if (!isEdit) setAbv(defaultAbv(nextAlcohol))
+  }
 
   const save = async () => {
     const amountNum = Number(String(amount).replace(',', '.'))
@@ -122,7 +130,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           <select
             className={`${styles.field} ${styles.select}`}
             value={alcohol}
-            onChange={(e) => setAlcohol(e.target.value as AlcoholType)}
+            onChange={(e) => changeAlcohol(e.target.value as AlcoholType)}
           >
             {ALCOHOL_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -200,4 +208,9 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
       </div>
     </Modal>
   )
+}
+
+function defaultAbv(alcohol: AlcoholType): string {
+  const value = DEFAULT_ABV_BY_ALCOHOL[alcohol]
+  return value == null ? '' : String(value)
 }
