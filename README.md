@@ -1,85 +1,84 @@
 # Alcogram Diary (PWA)
 
-Личный офлайн-first дневник алкоголя в духе [Alcogram](https://play.google.com/store/apps/details?id=com.kursx.booze).  
-Данные только на устройстве (IndexedDB). Без бэкенда и аккаунтов.
+Личный офлайн-first дневник алкоголя. Данные в IndexedDB на устройстве +
+опциональная синхронизация через **Supabase** (бесплатный tier) между iPhone и Android.
+
+Живой сайт: https://matsvet.github.io/alcogram-pwa/
 
 ## Стек
 
-- TypeScript + React + Vite
+- TypeScript + React + Vite + vite-plugin-pwa
 - Dexie (IndexedDB)
-- vite-plugin-pwa (manifest + service worker)
+- Supabase (Auth + Postgres), опционально
 
 ## Запуск локально
 
 ```bash
 cd alcogram-pwa
-NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm install
-NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm run dev
+cp .env.example .env.local   # если уже есть Supabase
+npm install
+npm run dev
 ```
 
-Сборка:
+## Облако (Supabase) – 10 минут
 
-```bash
-NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm run build
-NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm run preview
+1. Зарегистрируйся на [supabase.com](https://supabase.com) (free).
+2. **New project** → регион ближе к тебе → дождись готовности.
+3. **SQL Editor** → вставь и Run файл [`supabase/schema.sql`](supabase/schema.sql).
+4. **Authentication → Providers → Email**: включи Email.
+   - Для личного использования удобно отключить *Confirm email*
+     (Authentication → Providers → Email → Confirm email = off).
+5. **Project Settings → API**:
+   - `Project URL` → `VITE_SUPABASE_URL`
+   - `anon` `public` key → `VITE_SUPABASE_ANON_KEY`
+6. Локально положи в `.env.local`:
+
+```env
+VITE_SUPABASE_URL=https://xxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
 ```
 
-> Если в `~/.npmrc` указан корпоративный Nexus, для публичных пакетов используй `NPM_CONFIG_REGISTRY=https://registry.npmjs.org`.
+7. **Authentication → URL Configuration**:
+   - Site URL: `https://matsvet.github.io/alcogram-pwa/`
+   - Redirect URLs: `https://matsvet.github.io/alcogram-pwa/**` и `http://localhost:5173/**`
 
-## Импорт данных Alcogram
+8. Для GitHub Pages добавь Secrets репозитория:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`  
+   (Settings → Secrets and variables → Actions)
 
-1. Открой **Settings**
-2. Выбери режим:
-   - **Merge** – пропуск дублей по ключу `date + drink_index + alcohol + amount + abv + price + notes`
-   - **Replace all** – полная замена базы
-3. Загрузи `.csv` или `.json` (массив объектов с теми же полями)
+9. В приложении: **Settings → Регистрация** (один email/пароль) → на втором
+   устройстве **Вход** тем же аккаунтом → **Синхронизировать**.
 
-Пример sample: `public/sample-data/alcogram_sample.csv`
+### Как устроен sync
 
-Поля CSV:
+- Локально всегда IndexedDB (работает offline).
+- После логина: pull + merge + push (last-write-wins по `updatedAt`).
+- Запись/удаление → debounced sync (~1.2 с).
+- При возврате во вкладку / online – повторный sync.
+- Soft-delete: удаления доезжают на другие устройства.
 
-| Поле | Смысл |
-|------|--------|
-| `calendar_date` | YYYY-MM-DD |
-| `drink_index` | номер карточки в дне (1..N) |
-| `alcohol` | тип |
-| `amount` / `unit` | объём |
-| `abv` | крепость % |
-| `price` / `currency` | цена |
-| `notes` | заметка |
+`anon` key можно светить в клиенте: RLS режет доступ чужих `user_id`.
+**Service role key никогда не клади в фронт.**
 
-Один день может содержать несколько строк (разный `drink_index`).
+## Логика календаря
 
-## Экраны
+| Период | Нет напитков |
+|--------|-------------|
+| до 2023-01-01 | пустая ячейка |
+| 2023-01-01 … 2026-03-31 | пустой бокал («не пил») |
+| с 2026-04-01 | пустая ячейка (можно отметить «не пил» вручную) |
 
-- **Calendar** – месяц, иконки напитков на днях
-- **Day** – карточки напитков + ADD DRINK
-- **Drink form** – тип, объём, ABV, цена, notes, save/delete
-- **Statistics** – этанол, деньги, дни, топ типов
-- **Settings** – импорт/экспорт/очистка
+## Импорт CSV
 
-## PWA / установка
+Settings → Merge / Replace → файл. Seed: `public/seed/`.
 
-- **iPhone**: Safari → Поделиться → На экран «Домой»
-- **Android**: Chrome → Установить приложение / Добавить на главный экран
+## Деплой
 
-После первого визита shell кешируется service worker’ом; данные локальные.
-
-## Деплой (бесплатно)
-
-### Cloudflare Pages
-
-```bash
-npm run build
-# upload dist/  или connect Git repo, build command: npm run build, output: dist
-```
-
-### Vercel / Netlify
-
-- Build: `npm run build`
-- Output: `dist`
-- HTTPS из коробки
+GitHub Actions → Pages при push в `main` (см. `.github/workflows/deploy-pages.yml`).
 
 ## Приватность
 
-Нет облака, нет аналитики, нет аккаунтов. Бэкап – экспорт CSV из Settings.
+Данные в твоём Supabase-проекте (EU/US – выбираешь). Аккаунт один – делись
+только с собой. Репозиторий GitHub публичный: seed JSON с notes доступен по URL
+сайта – имей в виду.

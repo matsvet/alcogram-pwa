@@ -110,6 +110,7 @@ export function importRowToDrink(row: ImportRow, now: number): Drink | null {
     createdAt: now,
     updatedAt: now,
     source: 'import',
+    deleted: false,
   }
 }
 
@@ -143,6 +144,7 @@ export async function importDrinks(
   }
 
   if (mode === 'replace') {
+    // Soft-delete local so cloud sync can propagate removals
     await clearAllDrinks()
     await bulkPutDrinks(parsed)
     return {
@@ -248,5 +250,6 @@ export function createManualDrink(partial: {
     createdAt: now,
     updatedAt: now,
     source: 'manual',
+    deleted: false,
   }
 }

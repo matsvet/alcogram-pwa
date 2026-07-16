@@ -37,9 +37,14 @@ async function loadSeed(mode: 'auto' | 'force'): Promise<SeedStatus> {
       return { state: 'error', message: 'seed empty or invalid' }
     }
     if (mode === 'force') {
+      // Soft-delete so cloud sync can drop old rows on other devices
       await clearAllDrinks()
     }
-    await bulkPutDrinks(drinks)
+    const normalized = drinks.map((d) => ({
+      ...d,
+      deleted: d.deleted ?? false,
+    }))
+    await bulkPutDrinks(normalized)
     localStorage.setItem(SEED_FLAG, 'done')
     return { state: 'done', count: drinks.length, mode }
   } catch (e) {

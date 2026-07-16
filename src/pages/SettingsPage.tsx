@@ -6,9 +6,10 @@ import {
   parseImportFile,
 } from '../utils/csv'
 import { forceReseed } from '../seed'
+import { CloudAuth } from '../components/CloudAuth'
 import type { ImportMode, ImportResult } from '../types'
 
-const APP_VERSION = '1.0.0'
+const APP_VERSION = '1.1.0'
 
 interface Props {
   refreshKey: number
@@ -60,7 +61,8 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   }
 
   const clearAll = async () => {
-    if (!confirm('Удалить ВСЕ записи с устройства? Это необратимо.')) return
+    if (!confirm('Удалить ВСЕ записи с устройства? (в облаке пометятся удалёнными после sync)'))
+      return
     if (!confirm('Точно удалить? Сделайте экспорт, если нужен бэкап.')) return
     await clearAllDrinks()
     localStorage.removeItem('alcogram_seed_v1')
@@ -73,7 +75,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   const reseed = async () => {
     if (
       !confirm(
-        'Перезалить встроенный экспорт Alcogram (694 записи, 2023–2026)? Текущие данные будут заменены.',
+        'Перезалить встроенный экспорт Alcogram (694 записи, 2023–2026)? Текущие локальные данные будут стёрты и заменены.',
       )
     ) {
       return
@@ -84,7 +86,7 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
     try {
       const status = await forceReseed()
       if (status.state === 'done') {
-        setSeedMsg(`Загружено ${status.count} записей из seed`)
+        setSeedMsg(`Загружено ${status.count} записей из seed · затем sync в облако`)
         setCount(await countDrinks())
         onDataChange()
       } else if (status.state === 'error') {
@@ -100,19 +102,19 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
       <div className="settings-card">
         <h1>Settings</h1>
 
+        <CloudAuth onSynced={onDataChange} />
+
         <section className="settings-block">
-          <h2>Данные</h2>
+          <h2>Данные на устройстве</h2>
           <p>
             Записей в базе: <strong>{count}</strong>
           </p>
           <p className="muted">
-            Версия {APP_VERSION} · только на устройстве (IndexedDB)
+            Версия {APP_VERSION} · IndexedDB + опционально Supabase
           </p>
           <p className="muted">
-            Seed: экспорт 2023-01-01 … 2026-03-28 (694 напитка). В периоде
-            01.01.2023–31.03.2026 дни без записей = «не пил» (пустой бокал).
-            До 2023 и с 01.04.2026 — пустые ячейки (нет данных), пока не отметишь
-            «не пил» вручную.
+            Seed: 01.01.2023–28.03.2026. Авто-«не пил»: 01.01.2023–31.03.2026.
+            С 01.04.2026 и до 2023 – пусто, пока не отметишь вручную.
           </p>
           <button
             type="button"
@@ -129,9 +131,8 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
         <section className="settings-block">
           <h2>Импорт файла</h2>
           <p className="muted">
-            CSV или JSON. Несколько напитков в один день = разные{' '}
-            <code>drink_index</code>. Готовый raw:{" "}
-            <code>/seed/alcogram_all.csv</code>
+            CSV или JSON. После импорта при входе в облако данные уйдут на
+            сервер.
           </p>
           <div className="mode-row">
             <label>
@@ -189,8 +190,8 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
         <section className="settings-block">
           <h2>Установка PWA</h2>
           <p className="muted">
-            iPhone: Safari → Поделиться → На экран «Домой». Android: Chrome → меню → Установить
-            приложение. Данные offline после первого захода.
+            iPhone: Safari → Поделиться → На экран «Домой». Android: Chrome →
+            Установить. Offline shell + облако при сети.
           </p>
         </section>
       </div>

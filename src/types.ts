@@ -4,7 +4,9 @@ export type DrinkSource = 'import' | 'manual'
 export interface SoberDay {
   date: string // YYYY-MM-DD
   createdAt: number
+  updatedAt: number
   source: 'manual' | 'auto'
+  deleted: boolean
 }
 
 export interface Drink {
@@ -22,6 +24,7 @@ export interface Drink {
   createdAt: number
   updatedAt: number
   source: DrinkSource
+  deleted: boolean
 }
 
 /** Raw row from Alcogram CSV / JSON export */

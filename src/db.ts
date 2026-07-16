@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Drink, SoberDay } from './types'
+import { notifyLocalDataChange } from './sync/bus'
 
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>
@@ -15,24 +16,61 @@ db.version(2).stores({
   soberDays: 'date, createdAt',
 })
 
+db.version(3)
+  .stores({
+    drinks: 'id, date, drinkIndex, alcohol, [date+drinkIndex], updatedAt, deleted',
+    soberDays: 'date, createdAt, updatedAt, deleted',
+  })
+  .upgrade(async (tx) => {
+    await tx
+      .table('drinks')
+      .toCollection()
+      .modify((d: Record<string, unknown>) => {
+        if (d.deleted === undefined) d.deleted = false
+      })
+    await tx
+      .table('soberDays')
+      .toCollection()
+      .modify((s: Record<string, unknown>) => {
+        if (s.deleted === undefined) s.deleted = false
+        if (s.updatedAt === undefined) s.updatedAt = (s.createdAt as number) || Date.now()
+      })
+  })
+
 export { db }
 
+function aliveDrink(d: Drink): boolean {
+  return !d.deleted
+}
+
+function aliveSober(s: SoberDay): boolean {
+  return !s.deleted
+}
+
 export async function getAllDrinks(): Promise<Drink[]> {
-  return db.drinks.orderBy('date').reverse().toArray()
+  const all = await db.drinks.orderBy('date').reverse().toArray()
+  return all.filter(aliveDrink)
+}
+
+/** Including soft-deleted (for sync). */
+export async function getAllDrinksRaw(): Promise<Drink[]> {
+  return db.drinks.toArray()
 }
 
 export async function getDrinksByDate(date: string): Promise<Drink[]> {
-  return db.drinks.where('date').equals(date).sortBy('drinkIndex')
+  const rows = await db.drinks.where('date').equals(date).sortBy('drinkIndex')
+  return rows.filter(aliveDrink)
 }
 
 export async function getDrinksInRange(
   from: string,
   to: string,
 ): Promise<Drink[]> {
-  return db.drinks
+  const rows = await db.drinks
     .where('date')
     .between(from, to, true, true)
     .toArray()
+  return rows.filter(aliveDrink)
 }
 
 export async function getDatesWithDrinks(
@@ -46,6 +84,7 @@ export async function getDatesWithDrinks(
   const rows = await db.drinks.where('date').between(from, to, true, true).toArray()
   const map = new Map<string, Drink[]>()
   for (const d of rows) {
+    if (!aliveDrink(d)) continue
     const list = map.get(d.date) ?? []
     list.push(d)
     map.set(d.date, list)
@@ -67,42 +106,96 @@ export async function getSoberDatesInMonth(
     .where('date')
     .between(from, to, true, true)
     .toArray()
-  return new Set(rows.map((r) => r.date))
+  return new Set(rows.filter(aliveSober).map((r) => r.date))
+}
+
+export async function getAllSoberDaysRaw(): Promise<SoberDay[]> {
+  return db.soberDays.toArray()
 }
 
 export async function isSoberDay(date: string): Promise<boolean> {
   const row = await db.soberDays.get(date)
-  return !!row
+  return !!row && aliveSober(row)
 }
 
 export async function markSoberDay(
   date: string,
   source: SoberDay['source'] = 'manual',
 ): Promise<void> {
+  const now = Date.now()
+  const existing = await db.soberDays.get(date)
   await db.soberDays.put({
     date,
-    createdAt: Date.now(),
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
     source,
+    deleted: false,
   })
+  notifyLocalDataChange()
 }
 
 export async function unmarkSoberDay(date: string): Promise<void> {
-  await db.soberDays.delete(date)
+  const existing = await db.soberDays.get(date)
+  if (!existing) return
+  await db.soberDays.put({
+    ...existing,
+    deleted: true,
+    updatedAt: Date.now(),
+  })
+  notifyLocalDataChange()
 }
 
 export async function putDrink(drink: Drink): Promise<void> {
-  // Adding a drink cancels sober mark for that day
+  const withFlags: Drink = {
+    ...drink,
+    deleted: drink.deleted ?? false,
+    updatedAt: drink.updatedAt || Date.now(),
+  }
   await db.transaction('rw', db.drinks, db.soberDays, async () => {
-    await db.drinks.put(drink)
-    await db.soberDays.delete(drink.date)
+    await db.drinks.put(withFlags)
+    // Adding/editing a live drink cancels sober mark for that day
+    if (!withFlags.deleted) {
+      const sober = await db.soberDays.get(withFlags.date)
+      if (sober && !sober.deleted) {
+        await db.soberDays.put({
+          ...sober,
+          deleted: true,
+          updatedAt: Date.now(),
+        })
+      }
+    }
   })
+  notifyLocalDataChange()
 }
 
 export async function deleteDrink(id: string): Promise<void> {
-  await db.drinks.delete(id)
+  const existing = await db.drinks.get(id)
+  if (!existing) return
+  await db.drinks.put({
+    ...existing,
+    deleted: true,
+    updatedAt: Date.now(),
+  })
+  notifyLocalDataChange()
 }
 
 export async function clearAllDrinks(): Promise<void> {
+  const now = Date.now()
+  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+    const drinks = await db.drinks.toArray()
+    for (const d of drinks) {
+      await db.drinks.put({ ...d, deleted: true, updatedAt: now })
+    }
+    const sober = await db.soberDays.toArray()
+    for (const s of sober) {
+      await db.soberDays.put({ ...s, deleted: true, updatedAt: now })
+    }
+  })
+  notifyLocalDataChange()
+}
+
+/** Hard wipe local only (e.g. before force reseed). Does not soft-delete for sync. */
+export async function hardClearLocal(): Promise<void> {
   await db.transaction('rw', db.drinks, db.soberDays, async () => {
     await db.drinks.clear()
     await db.soberDays.clear()
@@ -110,11 +203,29 @@ export async function clearAllDrinks(): Promise<void> {
 }
 
 export async function countDrinks(): Promise<number> {
-  return db.drinks.count()
+  const all = await db.drinks.toArray()
+  return all.filter(aliveDrink).length
 }
 
 export async function bulkPutDrinks(drinks: Drink[]): Promise<void> {
-  await db.drinks.bulkPut(drinks)
+  const normalized = drinks.map((d) => ({
+    ...d,
+    deleted: d.deleted ?? false,
+  }))
+  await db.drinks.bulkPut(normalized)
+  notifyLocalDataChange()
+}
+
+export async function bulkPutDrinksSilent(drinks: Drink[]): Promise<void> {
+  const normalized = drinks.map((d) => ({
+    ...d,
+    deleted: d.deleted ?? false,
+  }))
+  await db.drinks.bulkPut(normalized)
+}
+
+export async function bulkPutSoberSilent(rows: SoberDay[]): Promise<void> {
+  await db.soberDays.bulkPut(rows)
 }
 
 /** Stable merge key for import dedup */

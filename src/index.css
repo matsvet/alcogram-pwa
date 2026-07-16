@@ -750,3 +750,23 @@ code {
   padding: 1px 5px;
   border-radius: 4px;
 }
+
+.env-pre {
+  background: #eef1f8;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 8px 0;
+  color: var(--text);
+}
+
+.settings-block a {
+  color: var(--primary);
+}
+
+.settings-block .field {
+  margin-top: 0;
+}

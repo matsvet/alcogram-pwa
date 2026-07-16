@@ -7,10 +7,12 @@ import { DrinkForm } from './pages/DrinkForm'
 import { StatsPage } from './pages/StatsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ensureSeeded } from './seed'
+import { onLocalDataChange } from './sync/bus'
+import { fullSync, scheduleSync } from './sync/sync'
+import { isCloudConfigured } from './lib/supabase'
 
 export default function App() {
   const [tab, setTab] = useState<TabId>('calendar')
-  // Default calendar to last month present in real export
   const [year, setYear] = useState(2026)
   const [month, setMonth] = useState(3)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -21,7 +23,6 @@ export default function App() {
   const [editingDrink, setEditingDrink] = useState<Drink | null | undefined>(
     undefined,
   )
-  // undefined = form closed; null = new drink; Drink = edit
 
   const bump = useCallback(() => setRefreshKey((k) => k + 1), [])
 
@@ -32,7 +33,6 @@ export default function App() {
       if (cancelled) return
       if (status.state === 'done') {
         setSeedInfo(`Импортировано ${status.count} записей из экспорта`)
-        // Jump calendar to latest data month
         setYear(2026)
         setMonth(3)
       }
@@ -41,6 +41,30 @@ export default function App() {
     })()
     return () => {
       cancelled = true
+    }
+  }, [bump])
+
+  // Wire local writes → debounced cloud sync
+  useEffect(() => {
+    return onLocalDataChange(() => scheduleSync())
+  }, [])
+
+  // Sync when app becomes visible / online
+  useEffect(() => {
+    if (!isCloudConfigured()) return
+    const run = () => {
+      void fullSync().then((r) => {
+        if (r.ok) bump()
+      })
+    }
+    const onVis = () => {
+      if (document.visibilityState === 'visible') run()
+    }
+    window.addEventListener('online', run)
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      window.removeEventListener('online', run)
+      document.removeEventListener('visibilitychange', onVis)
     }
   }, [bump])
 
