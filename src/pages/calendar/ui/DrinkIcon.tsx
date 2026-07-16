@@ -1,4 +1,4 @@
-import { Beer, GlassWater, type LucideIcon, Martini, Wine } from 'lucide-react'
+import { Beer, BottleWine, GlassWater, type LucideIcon, Martini, Wine } from 'lucide-react'
 import type { AlcoholType, Drink } from '@/shared/api/diary'
 import styles from './DrinkIcon.module.css'
 
@@ -11,39 +11,32 @@ interface Props {
   stack?: Drink[]
 }
 
-type IconKind = 'beer' | 'empty' | 'spirit' | 'wine'
-
 interface IconConfig {
   color: string
   Icon: LucideIcon
 }
 
-const ICONS: Record<IconKind, IconConfig> = {
-  beer: { Icon: Beer, color: '#C17D11' },
-  empty: { Icon: GlassWater, color: '#9AABB8' },
-  spirit: { Icon: Martini, color: '#8B5CF6' },
-  wine: { Icon: Wine, color: '#9F1239' },
-}
+const EMPTY_ICON: IconConfig = { Icon: GlassWater, color: '#9AABB8' }
 
-const ICON_KIND: Record<AlcoholType, IconKind> = {
-  Beer: 'beer',
-  'Red wine': 'wine',
-  'White wine': 'wine',
-  Wine: 'wine',
-  Champagne: 'wine',
-  Cider: 'beer',
-  Cocktail: 'spirit',
-  Liquor: 'spirit',
-  Sambuca: 'spirit',
-  Cognac: 'spirit',
-  Whiskey: 'spirit',
-  Vodka: 'spirit',
-  Rum: 'spirit',
-  Gin: 'spirit',
-  Tequila: 'spirit',
-  Brandy: 'spirit',
-  Sake: 'beer',
-  Other: 'beer',
+const ICONS: Record<AlcoholType, IconConfig> = {
+  Beer: { Icon: Beer, color: '#C17D11' },
+  'Red wine': { Icon: Wine, color: '#9F1239' },
+  'White wine': { Icon: Wine, color: '#D4A72C' },
+  Wine: { Icon: Wine, color: '#7F1D1D' },
+  Champagne: { Icon: BottleWine, color: '#C9A227' },
+  Cider: { Icon: Beer, color: '#D97706' },
+  Cocktail: { Icon: Martini, color: '#DB2777' },
+  Liquor: { Icon: BottleWine, color: '#7C3AED' },
+  Sambuca: { Icon: BottleWine, color: '#6D28D9' },
+  Cognac: { Icon: GlassWater, color: '#B45309' },
+  Whiskey: { Icon: GlassWater, color: '#A16207' },
+  Vodka: { Icon: GlassWater, color: '#0284C7' },
+  Rum: { Icon: GlassWater, color: '#92400E' },
+  Gin: { Icon: Martini, color: '#0F766E' },
+  Tequila: { Icon: GlassWater, color: '#65A30D' },
+  Brandy: { Icon: GlassWater, color: '#9A3412' },
+  Sake: { Icon: GlassWater, color: '#64748B' },
+  Other: { Icon: GlassWater, color: '#64748B' },
 }
 
 const SIZES: Record<Size, number> = { sm: 28, md: 40, lg: 56 }
@@ -77,9 +70,8 @@ function SingleIcon({
   empty?: boolean
   size?: Size
 }) {
-  const kind = empty || !alcohol ? 'empty' : ICON_KIND[alcohol]
   const px = SIZES[size]
-  const { Icon, color } = ICONS[kind]
+  const { Icon, color } = empty || !alcohol ? EMPTY_ICON : ICONS[alcohol]
 
   return <Icon size={px} color={color} strokeWidth={1.75} aria-hidden />
 }
