@@ -51,12 +51,12 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
   while (cells.length % 7 !== 0) cells.push(`empty-${cells.length}`)
 
   return (
-    <div className="page calendar-page">
-      <div className="calendar-card">
-        <div className="month-nav">
+    <div className="min-h-full">
+      <div className="min-h-[calc(100vh-100px)] rounded-card bg-card px-3 pt-4 pb-5 shadow-card">
+        <div className="flex items-center justify-between px-2 pt-1 pb-4">
           <button
             type="button"
-            className="nav-arrow"
+            className="flex size-10 items-center justify-center rounded-full text-[1.6rem] text-primary active:bg-primary/12"
             onClick={prev}
             aria-label={t('previousMonth')}
           >
@@ -64,7 +64,7 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
           </button>
           <input
             type="month"
-            className="month-picker"
+            className="min-h-10 rounded-lg border border-border bg-card px-2.5 py-1.5 text-center font-semibold text-primary"
             value={`${year}-${String(month).padStart(2, '0')}`}
             onChange={(event) => {
               const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
@@ -72,12 +72,17 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
             }}
             aria-label={t('chooseMonth')}
           />
-          <button type="button" className="nav-arrow" onClick={next} aria-label={t('nextMonth')}>
+          <button
+            type="button"
+            className="flex size-10 items-center justify-center rounded-full text-[1.6rem] text-primary active:bg-primary/12"
+            onClick={next}
+            aria-label={t('nextMonth')}
+          >
             ›
           </button>
         </div>
 
-        <div className="weekday-row">
+        <div className="mb-1 grid grid-cols-7 border-b border-border pb-2 text-center text-[0.8rem] font-medium text-text-muted">
           {weekdays(locale).map((w) => (
             <div key={w} className="weekday">
               {w}
@@ -85,28 +90,29 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
           ))}
         </div>
 
-        <div className="days-grid">
+        <div className="grid grid-cols-7 gap-y-0.5">
           {cells.map((cell) => {
             if (typeof cell === 'string') {
-              return <div key={cell} className="day-cell empty-slot" />
+              return <div key={cell} className="min-h-16 rounded-lg" />
             }
             const day = cell
             const date = toDateStr(year, month, day)
             const drinks = byDate.get(date) ?? []
             const visual = drinks.length > 0 ? 'drinks' : soberDates.has(date) ? 'sober' : 'blank'
+            const dayClasses = visual === 'blank' ? 'text-text-muted' : 'text-text'
             return (
               <button
                 key={date}
                 type="button"
-                className={`day-cell visual-${visual}`}
+                className={`flex min-h-16 flex-col items-center justify-start gap-0.5 rounded-lg border-b border-[#f0f2f6] px-0.5 pt-2 pb-2.5 active:bg-primary/10 ${dayClasses}`}
                 onClick={() => onSelectDay(date)}
               >
                 {visual === 'drinks' && (
                   <DrinkIcon stack={drinks} alcohol={drinks[0]?.alcohol} size="sm" />
                 )}
                 {visual === 'sober' && <DrinkIcon empty size="sm" />}
-                {visual === 'blank' && <span className="day-icon-spacer" />}
-                <span className="day-num">{day}</span>
+                {visual === 'blank' && <span className="block size-7" />}
+                <span className="text-[0.85rem] font-medium">{day}</span>
               </button>
             )
           })}

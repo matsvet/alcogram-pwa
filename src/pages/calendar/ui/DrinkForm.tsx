@@ -103,7 +103,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
         isEdit ? (
           <button
             type="button"
-            className="icon-btn danger"
+            className="flex size-9 items-center justify-center rounded-full text-[1.1rem] text-text-muted disabled:opacity-60"
             onClick={remove}
             aria-label={t('delete')}
             disabled={busy}
@@ -113,13 +113,13 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
         ) : undefined
       }
     >
-      <div className="form">
-        <div className="form-row type-row">
-          <div className="type-preview">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-stretch gap-2.5">
+          <div className="flex size-[52px] shrink-0 items-center justify-center rounded-[10px] border-[1.5px] border-primary">
             <DrinkIcon alcohol={alcohol} size="md" />
           </div>
           <select
-            className="field select"
+            className="w-full rounded-[10px] border-[1.5px] border-primary bg-white px-3.5 py-3 outline-none focus:shadow-[0_0_0_3px_rgba(107,127,232,0.2)]"
             value={alcohol}
             onChange={(e) => setAlcohol(e.target.value as AlcoholType)}
           >
@@ -131,16 +131,20 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           </select>
         </div>
 
-        <div className="form-grid">
-          <div className="field-group">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex overflow-hidden rounded-[10px] border-[1.5px] border-primary bg-white">
             <input
-              className="field"
+              className="min-w-0 flex-1 border-0 px-3.5 py-3 outline-none"
               inputMode="decimal"
               placeholder={t('volume')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <select className="field-suffix" value={unit} onChange={(e) => setUnit(e.target.value)}>
+            <select
+              className="max-w-[52px] border-0 border-l border-border bg-[#f7f8fc] px-2 text-[0.9rem] text-text-muted"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+            >
               {UNITS.map((u) => (
                 <option key={u} value={u}>
                   {u}
@@ -148,25 +152,25 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
               ))}
             </select>
           </div>
-          <div className="field-group">
+          <div className="flex overflow-hidden rounded-[10px] border-[1.5px] border-primary bg-white">
             <input
-              className="field"
+              className="min-w-0 flex-1 border-0 px-3.5 py-3 outline-none"
               inputMode="decimal"
               placeholder="ABV, °"
               value={abv}
               onChange={(e) => setAbv(e.target.value)}
             />
           </div>
-          <div className="field-group">
+          <div className="flex overflow-hidden rounded-[10px] border-[1.5px] border-primary bg-white">
             <input
-              className="field"
+              className="min-w-0 flex-1 border-0 px-3.5 py-3 outline-none"
               inputMode="decimal"
               placeholder={t('expenses')}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
             <select
-              className="field-suffix"
+              className="max-w-[52px] border-0 border-l border-border bg-[#f7f8fc] px-2 text-[0.9rem] text-text-muted"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -177,19 +181,28 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
               ))}
             </select>
           </div>
-          <div className="field-group">
-            <input className="field" value={formatDayShort(date, locale)} readOnly />
+          <div className="flex overflow-hidden rounded-[10px] border-[1.5px] border-primary bg-white">
+            <input
+              className="min-w-0 flex-1 border-0 px-3.5 py-3 outline-none"
+              value={formatDayShort(date, locale)}
+              readOnly
+            />
           </div>
         </div>
 
         <input
-          className="field notes"
+          className="w-full rounded-[10px] border-[1.5px] border-primary bg-white px-3.5 py-3 text-center outline-none focus:shadow-[0_0_0_3px_rgba(107,127,232,0.2)]"
           placeholder={t('notes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        <button type="button" className="btn-primary" onClick={save} disabled={busy}>
+        <button
+          type="button"
+          className="mt-1 w-full rounded-[10px] bg-primary p-3.5 font-semibold tracking-[0.04em] text-white active:bg-primary-dark disabled:opacity-60"
+          onClick={save}
+          disabled={busy}
+        >
           {t('save')}
         </button>
       </div>

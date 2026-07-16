@@ -62,25 +62,32 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
 
   return (
     <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
-      <div className="day-drinks">
-        {statusText && <p className="muted center day-status">{statusText}</p>}
+      <div className="flex flex-col gap-4">
+        {statusText && (
+          <p className="mb-1 text-center text-[0.85rem] text-text-muted">{statusText}</p>
+        )}
 
-        <div className="drink-cards">
+        <div className="flex min-h-20 flex-wrap justify-center gap-4">
           {drinks.map((d) => (
-            <button key={d.id} type="button" className="drink-card" onClick={() => onOpenDrink(d)}>
+            <button
+              key={d.id}
+              type="button"
+              className="flex min-w-[72px] flex-col items-center gap-1.5 rounded-xl px-3 py-2 active:bg-primary/8"
+              onClick={() => onOpenDrink(d)}
+            >
               <DrinkIcon alcohol={d.alcohol} size="lg" />
-              <div className="drink-card-meta">
+              <div className="flex flex-col items-center text-[0.85rem] text-text">
                 <span className="vol">{formatVolume(d.amount, d.unit)}</span>
                 {d.price != null && (
-                  <span className="price">{formatPrice(d.price, d.currency)}</span>
+                  <span className="font-medium">{formatPrice(d.price, d.currency)}</span>
                 )}
               </div>
             </button>
           ))}
           {!hasDrinks && showsAsSober && (
-            <div className="drink-card sober-preview">
+            <div className="pointer-events-none flex min-w-[72px] flex-col items-center gap-1.5 rounded-xl px-3 py-2 opacity-90">
               <DrinkIcon empty size="lg" />
-              <div className="drink-card-meta">
+              <div className="flex flex-col items-center text-[0.85rem] text-text">
                 <span className="vol">{t('didNotDrink')}</span>
               </div>
             </div>
@@ -90,7 +97,7 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!hasDrinks && !manualSober && (
           <button
             type="button"
-            className="btn-sober"
+            className="w-full rounded-[10px] border-[1.5px] border-[#b7e4c7] bg-[#eef6f0] px-3.5 py-3 font-semibold text-[#2d6a4f] active:bg-[#d8f3dc] disabled:opacity-60"
             disabled={busy}
             onClick={() => void markSober()}
           >
@@ -100,15 +107,18 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!hasDrinks && manualSober && (
           <button
             type="button"
-            className="btn-secondary"
-            style={{ width: '100%' }}
+            className="w-full rounded-[10px] bg-[#eef1f8] px-4 py-3 font-semibold text-primary disabled:opacity-60"
             disabled={busy}
             onClick={() => void clearSober()}
           >
             {t('clearSober')}
           </button>
         )}
-        <button type="button" className="btn-primary" onClick={() => onOpenDrink(null)}>
+        <button
+          type="button"
+          className="mt-1 w-full rounded-[10px] bg-primary p-3.5 font-semibold tracking-[0.04em] text-white active:bg-primary-dark"
+          onClick={() => onOpenDrink(null)}
+        >
           {t('addDrink')}
         </button>
       </div>
