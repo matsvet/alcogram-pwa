@@ -1,10 +1,16 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Drink, SoberDay } from './types'
 import { notifyLocalDataChange } from './sync/bus'
+import {
+  makeSyncQueueItem,
+  type SyncEntity,
+  type SyncQueueItem,
+} from './sync/outbox'
 
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>
   soberDays: EntityTable<SoberDay, 'date'>
+  syncQueue: EntityTable<SyncQueueItem, 'key'>
 }
 
 db.version(1).stores({
@@ -35,6 +41,23 @@ db.version(3)
         if (s.deleted === undefined) s.deleted = false
         if (s.updatedAt === undefined) s.updatedAt = (s.createdAt as number) || Date.now()
       })
+  })
+
+db.version(4)
+  .stores({
+    drinks: 'id, date, drinkIndex, alcohol, [date+drinkIndex], updatedAt, deleted',
+    soberDays: 'date, createdAt, updatedAt, deleted',
+    syncQueue: 'key, entity, updatedAt',
+  })
+  .upgrade(async (tx) => {
+    const drinks = (await tx.table('drinks').toArray()) as Drink[]
+    const soberDays = (await tx.table('soberDays').toArray()) as SoberDay[]
+    await tx
+      .table('syncQueue')
+      .bulkPut([
+        ...drinks.map((d) => makeSyncQueueItem('drink', d.id, d.updatedAt)),
+        ...soberDays.map((s) => makeSyncQueueItem('soberDay', s.date, s.updatedAt)),
+      ])
   })
 
 export { db }
@@ -124,12 +147,16 @@ export async function markSoberDay(
 ): Promise<void> {
   const now = Date.now()
   const existing = await db.soberDays.get(date)
-  await db.soberDays.put({
+  const row: SoberDay = {
     date,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
     source,
     deleted: false,
+  }
+  await db.transaction('rw', db.soberDays, db.syncQueue, async () => {
+    await db.soberDays.put(row)
+    await queueChange('soberDay', date, now)
   })
   notifyLocalDataChange()
 }
@@ -137,10 +164,14 @@ export async function markSoberDay(
 export async function unmarkSoberDay(date: string): Promise<void> {
   const existing = await db.soberDays.get(date)
   if (!existing) return
-  await db.soberDays.put({
+  const row: SoberDay = {
     ...existing,
     deleted: true,
     updatedAt: Date.now(),
+  }
+  await db.transaction('rw', db.soberDays, db.syncQueue, async () => {
+    await db.soberDays.put(row)
+    await queueChange('soberDay', date, row.updatedAt)
   })
   notifyLocalDataChange()
 }
@@ -151,17 +182,20 @@ export async function putDrink(drink: Drink): Promise<void> {
     deleted: drink.deleted ?? false,
     updatedAt: drink.updatedAt || Date.now(),
   }
-  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+  await db.transaction('rw', db.drinks, db.soberDays, db.syncQueue, async () => {
     await db.drinks.put(withFlags)
+    await queueChange('drink', withFlags.id, withFlags.updatedAt)
     // Adding/editing a live drink cancels sober mark for that day
     if (!withFlags.deleted) {
       const sober = await db.soberDays.get(withFlags.date)
       if (sober && !sober.deleted) {
-        await db.soberDays.put({
+        const removedSober: SoberDay = {
           ...sober,
           deleted: true,
           updatedAt: Date.now(),
-        })
+        }
+        await db.soberDays.put(removedSober)
+        await queueChange('soberDay', removedSober.date, removedSober.updatedAt)
       }
     }
   })
@@ -171,24 +205,32 @@ export async function putDrink(drink: Drink): Promise<void> {
 export async function deleteDrink(id: string): Promise<void> {
   const existing = await db.drinks.get(id)
   if (!existing) return
-  await db.drinks.put({
+  const row: Drink = {
     ...existing,
     deleted: true,
     updatedAt: Date.now(),
+  }
+  await db.transaction('rw', db.drinks, db.syncQueue, async () => {
+    await db.drinks.put(row)
+    await queueChange('drink', row.id, row.updatedAt)
   })
   notifyLocalDataChange()
 }
 
 export async function clearAllDrinks(): Promise<void> {
   const now = Date.now()
-  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+  await db.transaction('rw', db.drinks, db.soberDays, db.syncQueue, async () => {
     const drinks = await db.drinks.toArray()
     for (const d of drinks) {
-      await db.drinks.put({ ...d, deleted: true, updatedAt: now })
+      const row = { ...d, deleted: true, updatedAt: now }
+      await db.drinks.put(row)
+      await queueChange('drink', row.id, now)
     }
     const sober = await db.soberDays.toArray()
     for (const s of sober) {
-      await db.soberDays.put({ ...s, deleted: true, updatedAt: now })
+      const row = { ...s, deleted: true, updatedAt: now }
+      await db.soberDays.put(row)
+      await queueChange('soberDay', row.date, now)
     }
   })
   notifyLocalDataChange()
@@ -196,9 +238,10 @@ export async function clearAllDrinks(): Promise<void> {
 
 /** Hard wipe local only (e.g. before force reseed). Does not soft-delete for sync. */
 export async function hardClearLocal(): Promise<void> {
-  await db.transaction('rw', db.drinks, db.soberDays, async () => {
+  await db.transaction('rw', db.drinks, db.soberDays, db.syncQueue, async () => {
     await db.drinks.clear()
     await db.soberDays.clear()
+    await db.syncQueue.clear()
   })
 }
 
@@ -212,7 +255,12 @@ export async function bulkPutDrinks(drinks: Drink[]): Promise<void> {
     ...d,
     deleted: d.deleted ?? false,
   }))
-  await db.drinks.bulkPut(normalized)
+  await db.transaction('rw', db.drinks, db.syncQueue, async () => {
+    await db.drinks.bulkPut(normalized)
+    await db.syncQueue.bulkPut(
+      normalized.map((d) => makeSyncQueueItem('drink', d.id, d.updatedAt)),
+    )
+  })
   notifyLocalDataChange()
 }
 
@@ -226,6 +274,25 @@ export async function bulkPutDrinksSilent(drinks: Drink[]): Promise<void> {
 
 export async function bulkPutSoberSilent(rows: SoberDay[]): Promise<void> {
   await db.soberDays.bulkPut(rows)
+}
+
+async function queueChange(entity: SyncEntity, id: string, updatedAt: number): Promise<void> {
+  await db.syncQueue.put(makeSyncQueueItem(entity, id, updatedAt))
+}
+
+export async function getSyncQueue(): Promise<SyncQueueItem[]> {
+  return db.syncQueue.toArray()
+}
+
+/** Remove only the queue entries that have not changed during this sync. */
+export async function clearSyncedQueue(items: SyncQueueItem[]): Promise<void> {
+  if (!items.length) return
+  await db.transaction('rw', db.syncQueue, async () => {
+    for (const item of items) {
+      const current = await db.syncQueue.get(item.key)
+      if (current?.updatedAt === item.updatedAt) await db.syncQueue.delete(item.key)
+    }
+  })
 }
 
 /** Stable merge key for import dedup */

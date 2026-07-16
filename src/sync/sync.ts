@@ -2,10 +2,13 @@ import type { Drink, SoberDay } from '../types'
 import {
   bulkPutDrinksSilent,
   bulkPutSoberSilent,
+  clearSyncedQueue,
   getAllDrinksRaw,
   getAllSoberDaysRaw,
+  getSyncQueue,
 } from '../db'
 import { getSupabase, isCloudConfigured } from '../lib/supabase'
+import { chooseSyncWinner, type SyncQueueItem } from './outbox'
 
 export type SyncResult =
   | { ok: true; drinksUp: number; drinksDown: number; soberUp: number; soberDown: number }
@@ -55,14 +58,10 @@ function emit(msg: string) {
 /** Debounced background sync after local writes. */
 export function scheduleSync(delayMs = 1200): void {
   if (!isCloudConfigured()) return
+  emit('Сохранено на устройстве · ожидает синхронизации')
   if (syncTimer) clearTimeout(syncTimer)
   syncTimer = setTimeout(() => {
-    void fullSync().then((r) => {
-      if (r.ok) emit(`Синхронизировано · ↑${r.drinksUp + r.soberUp} ↓${r.drinksDown + r.soberDown}`)
-      else if (r.error !== 'not_signed_in' && r.error !== 'not_configured') {
-        emit(`Синхронизация: ${r.error}`)
-      }
-    })
+    void fullSync()
   }, delayMs)
 }
 
@@ -77,14 +76,29 @@ export async function fullSync(): Promise<SyncResult> {
   syncing = true
   emit('Синхронизация…')
 
+  const fail = (error: string): SyncResult => {
+    if (error !== 'not_signed_in' && error !== 'not_configured') {
+      emit(`Ошибка синхронизации: ${error}`)
+    }
+    return { ok: false, error }
+  }
+
   try {
     const {
       data: { session },
     } = await supabase.auth.getSession()
     if (!session?.user) {
-      return { ok: false, error: 'not_signed_in' }
+      return fail('not_signed_in')
     }
     const userId = session.user.id
+    const queue = await getSyncQueue()
+    const drinkQueue = new Map(
+      queue.filter((item) => item.entity === 'drink').map((item) => [item.id, item]),
+    )
+    const soberQueue = new Map(
+      queue.filter((item) => item.entity === 'soberDay').map((item) => [item.id, item]),
+    )
+    const clearQueue: SyncQueueItem[] = []
 
     // --- DRINKS ---
     const { data: remoteDrinks, error: pullDrinksErr } = await supabase
@@ -93,7 +107,7 @@ export async function fullSync(): Promise<SyncResult> {
       .eq('user_id', userId)
 
     if (pullDrinksErr) {
-      return { ok: false, error: pullDrinksErr.message }
+      return fail(pullDrinksErr.message)
     }
 
     const localDrinks = await getAllDrinksRaw()
@@ -101,26 +115,34 @@ export async function fullSync(): Promise<SyncResult> {
     const localMap = new Map(localDrinks.map((d) => [d.id, d]))
 
     const mergedDrinks: Drink[] = []
-    const toPushDrinks: RemoteDrink[] = []
+    const toPushDrinks: Array<{ row: RemoteDrink; queue?: SyncQueueItem }> = []
 
     const allIds = new Set([...remoteMap.keys(), ...localMap.keys()])
     for (const id of allIds) {
       const local = localMap.get(id)
       const remote = remoteMap.get(id)
-      if (local && remote) {
-        const winner =
-          local.updatedAt >= remote.updated_at
-            ? local
-            : remoteToDrink(remote)
-        mergedDrinks.push(winner)
-        if (local.updatedAt >= remote.updated_at) {
-          toPushDrinks.push(drinkToRemote(winner, userId))
-        }
-      } else if (local) {
+      if (!local && remote) {
+        mergedDrinks.push(remoteToDrink(remote))
+        continue
+      }
+      if (!local) continue
+
+      const queueItem = drinkQueue.get(id)
+      const decision = chooseSyncWinner(
+        local.updatedAt,
+        remote?.updated_at,
+        Boolean(queueItem),
+      )
+      if (decision.winner === 'local') {
         mergedDrinks.push(local)
-        toPushDrinks.push(drinkToRemote(local, userId))
+        if (decision.upload) {
+          toPushDrinks.push({ row: drinkToRemote(local, userId), queue: queueItem })
+        }
       } else if (remote) {
         mergedDrinks.push(remoteToDrink(remote))
+      }
+      if (decision.clearQueue && queueItem) {
+        clearQueue.push(queueItem)
       }
     }
 
@@ -128,11 +150,13 @@ export async function fullSync(): Promise<SyncResult> {
 
     let drinksUp = 0
     if (toPushDrinks.length) {
-      // upsert in chunks
       for (const chunk of chunkArr(toPushDrinks, 200)) {
-        const { error } = await supabase.from('drinks').upsert(chunk, { onConflict: 'id' })
-        if (error) return { ok: false, error: error.message }
+        const { error } = await supabase
+          .from('drinks')
+          .upsert(chunk.map((item) => item.row), { onConflict: 'id' })
+        if (error) return fail(error.message)
         drinksUp += chunk.length
+        clearQueue.push(...chunk.flatMap((item) => (item.queue ? [item.queue] : [])))
       }
     }
 
@@ -143,7 +167,7 @@ export async function fullSync(): Promise<SyncResult> {
       .eq('user_id', userId)
 
     if (pullSoberErr) {
-      return { ok: false, error: pullSoberErr.message }
+      return fail(pullSoberErr.message)
     }
 
     const localSober = await getAllSoberDaysRaw()
@@ -151,26 +175,34 @@ export async function fullSync(): Promise<SyncResult> {
     const lSober = new Map(localSober.map((s) => [s.date, s]))
 
     const mergedSober: SoberDay[] = []
-    const toPushSober: RemoteSober[] = []
+    const toPushSober: Array<{ row: RemoteSober; queue?: SyncQueueItem }> = []
     const allDates = new Set([...rSober.keys(), ...lSober.keys()])
 
     for (const date of allDates) {
       const local = lSober.get(date)
       const remote = rSober.get(date)
-      if (local && remote) {
-        const winner =
-          local.updatedAt >= remote.updated_at
-            ? local
-            : remoteToSober(remote)
-        mergedSober.push(winner)
-        if (local.updatedAt >= remote.updated_at) {
-          toPushSober.push(soberToRemote(winner, userId))
-        }
-      } else if (local) {
+      if (!local && remote) {
+        mergedSober.push(remoteToSober(remote))
+        continue
+      }
+      if (!local) continue
+
+      const queueItem = soberQueue.get(date)
+      const decision = chooseSyncWinner(
+        local.updatedAt,
+        remote?.updated_at,
+        Boolean(queueItem),
+      )
+      if (decision.winner === 'local') {
         mergedSober.push(local)
-        toPushSober.push(soberToRemote(local, userId))
+        if (decision.upload) {
+          toPushSober.push({ row: soberToRemote(local, userId), queue: queueItem })
+        }
       } else if (remote) {
         mergedSober.push(remoteToSober(remote))
+      }
+      if (decision.clearQueue && queueItem) {
+        clearQueue.push(queueItem)
       }
     }
 
@@ -181,24 +213,29 @@ export async function fullSync(): Promise<SyncResult> {
       for (const chunk of chunkArr(toPushSober, 200)) {
         const { error } = await supabase
           .from('sober_days')
-          .upsert(chunk, { onConflict: 'user_id,date' })
-        if (error) return { ok: false, error: error.message }
+          .upsert(chunk.map((item) => item.row), { onConflict: 'user_id,date' })
+        if (error) return fail(error.message)
         soberUp += chunk.length
+        clearQueue.push(...chunk.flatMap((item) => (item.queue ? [item.queue] : [])))
       }
     }
+
+    await clearSyncedQueue(clearQueue)
 
     const drinksDown = (remoteDrinks as RemoteDrink[]).length
     const soberDown = (remoteSober as RemoteSober[]).length
 
-    return {
+    const result: SyncResult = {
       ok: true,
       drinksUp,
       drinksDown,
       soberUp,
       soberDown,
     }
+    emit('Синхронизировано')
+    return result
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    return fail(e instanceof Error ? e.message : String(e))
   } finally {
     syncing = false
   }

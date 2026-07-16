@@ -37,12 +37,9 @@ export function CloudAuth({ onSynced }: Props) {
     if (!session) return
     void fullSync().then((r) => {
       if (r.ok) {
-        setSyncMsg(
-          `Синхронизировано · напитки ↑${r.drinksUp} ↓${r.drinksDown}`,
-        )
         onSynced()
       } else if (r.error !== 'busy') {
-        setSyncMsg(`Sync: ${r.error}`)
+        setSyncMsg(`Ошибка синхронизации: ${r.error}`)
       }
     })
   }, [session?.user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -139,12 +136,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
     try {
       const r = await fullSync()
       if (r.ok) {
-        setSyncMsg(
-          `Готово · drinks ↑${r.drinksUp} cloud=${r.drinksDown} · sober ↑${r.soberUp}`,
-        )
         onSynced()
-      } else {
-        setErr(r.error)
       }
     } finally {
       setBusy(false)
@@ -181,7 +173,11 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               Выйти
             </button>
           </div>
-          {syncMsg && <div className="import-result">{syncMsg}</div>}
+          {syncMsg && (
+            <div className={syncMsg.startsWith('Ошибка') ? 'import-error' : 'import-result'}>
+              {syncMsg}
+            </div>
+          )}
         </>
       ) : (
         <>
