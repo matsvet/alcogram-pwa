@@ -48,6 +48,8 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
   const totalDays = daysInMonth(year, month)
   const firstWeekday = weekdayMon0(toDateStr(year, month, 1))
   const today = todayStr()
+  const [currentYear, currentMonth] = today.split('-').map(Number)
+  const isCurrentMonth = year === currentYear && month === currentMonth
   const cells: (number | string)[] = []
   for (let i = 0; i < firstWeekday; i++) cells.push(`empty-${i}`)
   for (let d = 1; d <= totalDays; d++) cells.push(d)
@@ -119,16 +121,15 @@ export function CalendarPage({ year, month, onYearMonth, onSelectDay, refreshKey
             })}
           </div>
 
-          <button
-            type="button"
-            className={styles.todayButton}
-            onClick={() => {
-              const date = new Date()
-              onYearMonth(date.getFullYear(), date.getMonth() + 1)
-            }}
-          >
-            {t('today')}
-          </button>
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              className={styles.todayButton}
+              onClick={() => onYearMonth(currentYear, currentMonth)}
+            >
+              {t('today')}
+            </button>
+          )}
         </div>
       </PageCard>
     </div>
