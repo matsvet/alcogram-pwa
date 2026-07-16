@@ -92,3 +92,8 @@ GitHub Actions → Pages при push в `main` (см. `.github/workflows/deploy-
 
 Данные хранятся в Supabase-проекте, который вы настроили. Доступ к строкам
 ограничен политиками RLS для каждого пользователя.
+
+## Разработка
+
+Соглашения по веткам, коммитам, PR и архитектуре описаны в
+[CONTRIBUTING.md](CONTRIBUTING.md).
