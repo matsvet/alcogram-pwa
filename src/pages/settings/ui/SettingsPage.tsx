@@ -5,7 +5,6 @@ import { PageCard } from '@/shared/ui'
 import { drinksToCsv, importDrinks, parseImportFile } from '../lib/importExport'
 import type { ImportMode, ImportResult } from '../model/import'
 import { CloudAuth } from './CloudAuth'
-import styles from './SettingsPage.module.css'
 
 const APP_VERSION = '1.1.0'
 
@@ -60,15 +59,15 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
   }
 
   return (
-    <div className={styles.root}>
+    <div className="min-h-full">
       <PageCard>
-        <h1 className={styles.title}>{t('settings')}</h1>
+        <h1 className="mb-4 text-center text-[1.35rem] text-primary">{t('settings')}</h1>
 
-        <section className={styles.section}>
+        <section className="mb-6 border-b border-[#eef1f5] pb-4">
           <label>
             {t('language')}
             <select
-              className={styles.field}
+              className="mt-0 w-full rounded-[10px] border-[1.5px] border-primary bg-white px-3.5 py-3 outline-none focus:shadow-[0_0_0_3px_rgba(107,127,232,0.2)]"
               value={locale}
               onChange={(event) => setLocale(event.target.value as 'en' | 'ru')}
             >
@@ -80,20 +79,20 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
 
         <CloudAuth onSynced={onDataChange} />
 
-        <section className={styles.section}>
+        <section className="mb-6 border-b border-[#eef1f5] pb-4">
           <h2>{t('deviceData')}</h2>
           <p>
             {t('recordsInDb')} <strong>{count}</strong>
           </p>
-          <p className={styles.muted}>
+          <p className="mb-2 text-[0.9rem] text-text-muted">
             {t('version')} {APP_VERSION} · {t('optionalSupabase')}
           </p>
         </section>
 
-        <section className={styles.section}>
+        <section className="mb-6 border-b border-[#eef1f5] pb-4">
           <h2>{t('importFile')}</h2>
-          <p className={styles.muted}>{t('importDescription')}</p>
-          <div className={styles.modeRow}>
+          <p className="mb-2 text-[0.9rem] text-text-muted">{t('importDescription')}</p>
+          <div className="my-3 flex flex-col gap-2 text-[0.9rem]">
             <label>
               <input
                 type="radio"
@@ -117,29 +116,33 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
             ref={fileRef}
             type="file"
             accept=".csv,.json,text/csv,application/json"
-            className={styles.fileInput}
+            className="my-2 w-full text-[0.85rem]"
             disabled={busy}
             onChange={(e) => {
               const f = e.target.files?.[0]
               if (f) void onFile(f)
             }}
           />
-          {busy && <p className={styles.muted}>{t('importing')}</p>}
+          {busy && <p className="text-text-muted">{t('importing')}</p>}
           {result && (
-            <div className={styles.result}>
+            <div className="mt-2 rounded-lg bg-[#e8f8ef] px-3 py-2.5 text-[0.85rem] text-[#1e7a45]">
               {t('added')} {result.added}, {t('skipped')} {result.skipped}, {t('invalid')}{' '}
               {result.invalid} ({t('from')} {result.total})
             </div>
           )}
-          {error && <div className={styles.error}>{error}</div>}
+          {error && (
+            <div className="mt-2 rounded-lg bg-[#fdecea] px-3 py-2.5 text-[0.85rem] text-danger">
+              {error}
+            </div>
+          )}
         </section>
 
-        <section className={styles.section}>
+        <section className="mb-6 border-b border-[#eef1f5] pb-4">
           <h2>{t('export')}</h2>
-          <div className={styles.buttonRow}>
+          <div className="flex gap-2.5">
             <button
               type="button"
-              className={styles.secondaryButton}
+              className="flex-1 rounded-[10px] bg-[#eef1f8] px-4 py-3 font-semibold text-primary"
               onClick={() => void exportCsv()}
             >
               {t('exportCsv')}
@@ -147,9 +150,9 @@ export function SettingsPage({ refreshKey, onDataChange }: Props) {
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className="mb-6 pb-4">
           <h2>{t('installPwa')}</h2>
-          <p className={styles.muted}>{t('installDescription')}</p>
+          <p className="mb-2 text-[0.9rem] text-text-muted">{t('installDescription')}</p>
         </section>
       </PageCard>
     </div>

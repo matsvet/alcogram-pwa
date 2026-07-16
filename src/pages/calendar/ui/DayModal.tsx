@@ -5,7 +5,6 @@ import { formatDayTitle, todayStr } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import { formatPrice, formatVolume } from '@/shared/lib/volume'
 import { Modal } from '@/shared/ui'
-import styles from './DayModal.module.css'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -60,30 +59,33 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
 
   return (
     <Modal title={formatDayTitle(date, locale)} onClose={onClose}>
-      <div className={styles.root}>
-        <div className={styles.cards}>
-          <p className={styles.status}>{statusText}</p>
+      <div className="flex flex-col gap-4">
+        {statusText && (
+          <p className="mb-1 text-center text-[0.85rem] text-text-muted">{statusText}</p>
+        )}
+
+        <div className="flex min-h-20 flex-wrap justify-center gap-4">
           {drinks.map((d) => (
             <button
               key={d.id}
               type="button"
-              className={styles.card}
+              className="flex min-w-[72px] flex-col items-center gap-1.5 rounded-xl px-3 py-2 active:bg-primary/8 disabled:pointer-events-none"
               onClick={() => onOpenDrink(d)}
               disabled={isFuture}
             >
               <DrinkIcon alcohol={d.alcohol} size="lg" />
-              <div className={styles.cardMeta}>
+              <div className="flex flex-col items-center text-[0.85rem] text-text">
                 <span>{formatVolume(d.amount, d.unit)}</span>
                 {d.price != null && (
-                  <span className={styles.price}>{formatPrice(d.price, d.currency)}</span>
+                  <span className="font-medium">{formatPrice(d.price, d.currency)}</span>
                 )}
               </div>
             </button>
           ))}
           {!hasDrinks && showsAsSober && (
-            <div className={`${styles.card} ${styles.soberPreview}`}>
+            <div className="pointer-events-none flex min-w-[72px] flex-col items-center gap-1.5 rounded-xl px-3 py-2 opacity-90">
               <DrinkIcon empty size="lg" />
-              <div className={styles.cardMeta}>
+              <div className="flex flex-col items-center text-[0.85rem] text-text">
                 <span>{t('didNotDrink')}</span>
               </div>
             </div>
@@ -93,7 +95,7 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!isFuture && !hasDrinks && !manualSober && (
           <button
             type="button"
-            className={styles.soberButton}
+            className="w-full rounded-[10px] border-[1.5px] border-[#b7e4c7] bg-[#eef6f0] px-3.5 py-3 font-semibold text-[#2d6a4f] active:bg-[#d8f3dc] disabled:opacity-60"
             disabled={busy}
             onClick={() => void markSober()}
           >
@@ -103,7 +105,7 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
         {!isFuture && !hasDrinks && manualSober && (
           <button
             type="button"
-            className={styles.secondaryButton}
+            className="w-full rounded-[10px] bg-[#eef1f8] px-4 py-3 font-semibold text-primary disabled:opacity-60"
             disabled={busy}
             onClick={() => void clearSober()}
           >
@@ -111,7 +113,11 @@ export function DayModal({ date, onClose, onOpenDrink, onChanged, refreshKey }: 
           </button>
         )}
         {!isFuture && (
-          <button type="button" className={styles.primaryButton} onClick={() => onOpenDrink(null)}>
+          <button
+            type="button"
+            className="mt-1 w-full rounded-[10px] bg-primary p-3.5 font-semibold tracking-[0.04em] text-white active:bg-primary-dark"
+            onClick={() => onOpenDrink(null)}
+          >
             {t('addDrink')}
           </button>
         )}

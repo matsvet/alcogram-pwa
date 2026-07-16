@@ -1,7 +1,6 @@
 import { daysInMonth } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import type { Period, PeriodStats } from '../model/statistics'
-import styles from './StatsSummary.module.css'
 
 interface Props {
   stats: PeriodStats
@@ -26,48 +25,54 @@ export function StatsSummary({ stats, period, year, month }: Props) {
   }).format(drinkingDayPercentage ?? 0)
 
   return (
-    <div className={styles.grid}>
-      <div className={styles.stat}>
-        <div className={styles.statValue}>
+    <div className="mb-5 grid grid-cols-2 gap-2.5">
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="break-words text-[1.15rem] font-bold text-text">
           {stats.totalEthanolMl > 0
             ? `${(stats.totalEthanolMl / 1000).toFixed(2)} ${locale === 'ru' ? 'л' : 'l'}`
             : '—'}
         </div>
-        <div className={styles.statName}>{t('ethanol')}</div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('ethanol')}</div>
         {!stats.totalEthanolKnown && stats.totalEthanolMl > 0 && (
-          <div className={styles.statHint}>{t('missingAbv')}</div>
+          <div className="mt-0.5 text-[0.65rem] text-text-muted">{t('missingAbv')}</div>
         )}
       </div>
-      <div className={styles.stat}>
-        <div className={styles.statValue}>
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="break-words text-[1.15rem] font-bold text-text">
           {Object.keys(stats.currencies).length === 0
             ? '—'
             : Object.entries(stats.currencies)
                 .map(([currency, value]) => `${Math.round(value)} ${currency}`)
                 .join(', ')}
         </div>
-        <div className={styles.statName}>{t('spent')}</div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('spent')}</div>
       </div>
-      <div className={styles.stat}>
-        <div className={`${styles.statValue} ${styles.drinkingDaysValue}`}>
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="flex items-baseline justify-center gap-1.5 break-words text-[1.15rem] font-bold text-text">
           <span>{stats.drinkingDays}</span>
           {drinkingDayPercentage != null && (
-            <span className={styles.drinkingDaysPercentage}>{formattedDrinkingDayPercentage}%</span>
+            <span className="whitespace-nowrap text-[0.75em] font-semibold text-primary">
+              {formattedDrinkingDayPercentage}%
+            </span>
           )}
         </div>
-        <div className={styles.statName}>{t('drinkingDays')}</div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('drinkingDays')}</div>
       </div>
-      <div className={styles.stat}>
-        <div className={styles.statValue}>{stats.totalDrinks}</div>
-        <div className={styles.statName}>{t('drinks')}</div>
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="break-words text-[1.15rem] font-bold text-text">{stats.totalDrinks}</div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('drinks')}</div>
       </div>
-      <div className={styles.stat}>
-        <div className={styles.statValue}>{stats.longestDrinkingStreak}</div>
-        <div className={styles.statName}>{t('longestDrinkingStreak')}</div>
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="break-words text-[1.15rem] font-bold text-text">
+          {stats.longestDrinkingStreak}
+        </div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('longestDrinkingStreak')}</div>
       </div>
-      <div className={styles.stat}>
-        <div className={styles.statValue}>{stats.longestSoberStreak}</div>
-        <div className={styles.statName}>{t('longestSoberStreak')}</div>
+      <div className="rounded-xl bg-[#f5f7fc] px-3 py-3.5 text-center">
+        <div className="break-words text-[1.15rem] font-bold text-text">
+          {stats.longestSoberStreak}
+        </div>
+        <div className="mt-1 text-[0.75rem] text-text-muted">{t('longestSoberStreak')}</div>
       </div>
     </div>
   )

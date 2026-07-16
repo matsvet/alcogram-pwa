@@ -1,6 +1,5 @@
 import { Beer, BottleWine, GlassWater, type LucideIcon, Martini, Wine } from 'lucide-react'
 import type { AlcoholType, Drink } from '@/shared/api/diary'
-import styles from './DrinkIcon.module.css'
 
 type Size = 'sm' | 'md' | 'lg'
 
@@ -51,9 +50,13 @@ export function DrinkIcon({ alcohol, empty, size = 'md', stack }: Props) {
 
     if (shown.length > 1) {
       return (
-        <span className={styles.stack}>
+        <span className="relative inline-flex h-7">
           {shown.map((d, i) => (
-            <span key={d.id} className={styles.stackItem} style={{ zIndex: shown.length - i }}>
+            <span
+              key={d.id}
+              className="relative -ml-2.5 first:ml-0"
+              style={{ zIndex: shown.length - i }}
+            >
               <SingleIcon alcohol={d.alcohol} size={size} />
             </span>
           ))}
