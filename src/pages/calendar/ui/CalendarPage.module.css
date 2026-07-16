@@ -54,7 +54,7 @@
 }
 
 .days {
-  flex: 0.5;
+  flex: 0.3;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px 0;
