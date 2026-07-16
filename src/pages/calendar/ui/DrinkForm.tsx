@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import type { Drink } from '@/shared/api/diary'
+import { ALCOHOL_TYPES, type AlcoholType, type Drink } from '@/shared/api/diary'
 import { deleteDrink, getDrinksByDate, putDrink } from '@/shared/db/diary'
 import { formatDayShort } from '@/shared/lib/date'
 import { toMl } from '@/shared/lib/volume'
 import { Modal } from '@/shared/ui/Modal'
-import { ALCOHOL_TYPES, CURRENCIES, createManualDrink, UNITS } from '../model/drink'
+import { CURRENCIES, createManualDrink, UNITS } from '../model/drink'
 import { DrinkIcon } from './DrinkIcon'
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 
 export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
   const isEdit = !!drink
-  const [alcohol, setAlcohol] = useState(drink?.alcohol ?? 'Beer')
+  const [alcohol, setAlcohol] = useState<AlcoholType>(drink?.alcohol ?? 'Beer')
   const [amount, setAmount] = useState(drink ? String(drink.amount) : '')
   const [unit, setUnit] = useState(drink?.unit ?? 'l')
   const [abv, setAbv] = useState(drink?.abv != null ? String(drink.abv) : '')
@@ -47,7 +47,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
       if (isEdit && drink) {
         const updated: Drink = {
           ...drink,
-          alcohol: alcohol.trim(),
+          alcohol,
           amount: amountNum,
           unit,
           amountMl: toMl(amountNum, unit),
@@ -66,7 +66,7 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
             : Math.max(...existing.map((d) => d.drinkIndex)) + 1
         const created = createManualDrink({
           date,
-          alcohol: alcohol.trim(),
+          alcohol,
           amount: amountNum,
           unit,
           abv: abvNum,
@@ -120,34 +120,16 @@ export function DrinkForm({ date, drink, onClose, onSaved }: Props) {
           </div>
           <select
             className="field select"
-            value={
-              ALCOHOL_TYPES.includes(alcohol as (typeof ALCOHOL_TYPES)[number])
-                ? alcohol
-                : '__custom__'
-            }
-            onChange={(e) => {
-              if (e.target.value !== '__custom__') setAlcohol(e.target.value)
-            }}
+            value={alcohol}
+            onChange={(e) => setAlcohol(e.target.value as AlcoholType)}
           >
             {ALCOHOL_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
             ))}
-            {!ALCOHOL_TYPES.includes(alcohol as (typeof ALCOHOL_TYPES)[number]) && (
-              <option value="__custom__">{alcohol}</option>
-            )}
           </select>
         </div>
-
-        {!ALCOHOL_TYPES.includes(alcohol as (typeof ALCOHOL_TYPES)[number]) && (
-          <input
-            className="field"
-            value={alcohol}
-            onChange={(e) => setAlcohol(e.target.value)}
-            placeholder="Тип напитка"
-          />
-        )}
 
         <div className="form-grid">
           <div className="field-group">

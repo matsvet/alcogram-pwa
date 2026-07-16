@@ -1,3 +1,5 @@
+import type { AlcoholType } from '@/shared/api/diary'
+
 export interface ImportRow {
   calendar_date?: string
   year?: number | string
@@ -6,7 +8,7 @@ export interface ImportRow {
   month_name?: string
   date_label?: string
   drink_index?: number | string
-  alcohol?: string
+  alcohol?: AlcoholType
   amount?: number | string
   unit?: string
   abv?: number | string

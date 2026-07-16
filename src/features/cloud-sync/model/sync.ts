@@ -1,4 +1,4 @@
-import type { Drink, SoberDay } from '@/shared/api/diary'
+import type { AlcoholType, Drink, SoberDay } from '@/shared/api/diary'
 import {
   bulkPutDrinksSilent,
   bulkPutSoberSilent,
@@ -19,7 +19,7 @@ type RemoteDrink = {
   user_id: string
   date: string
   drink_index: number
-  alcohol: string
+  alcohol: AlcoholType
   amount: number
   unit: string
   amount_ml: number

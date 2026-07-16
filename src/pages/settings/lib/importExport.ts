@@ -85,7 +85,7 @@ export function importRowToDrink(row: ImportRow, now: number): Drink | null {
     buildDate(row.year, row.month, row.day)
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
 
-  const alcohol = String(row.alcohol ?? '').trim()
+  const alcohol = row.alcohol
   const amount = parseNumber(row.amount)
   // Skip empty cards
   if (!alcohol && amount == null) return null
@@ -100,7 +100,7 @@ export function importRowToDrink(row: ImportRow, now: number): Drink | null {
     id: uuid(),
     date,
     drinkIndex,
-    alcohol: alcohol || (row.preview ? String(row.preview).slice(0, 40) : 'Other'),
+    alcohol: alcohol || 'Other',
     amount: amountVal,
     unit,
     amountMl: toMl(amountVal, unit),

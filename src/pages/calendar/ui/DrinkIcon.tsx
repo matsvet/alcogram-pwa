@@ -1,46 +1,35 @@
-import type { Drink } from '@/shared/api/diary'
+import type { AlcoholType, Drink } from '@/shared/api/diary'
 
 type Size = 'sm' | 'md' | 'lg'
 
 interface Props {
-  alcohol?: string
+  alcohol?: AlcoholType
   empty?: boolean
   size?: Size
   stack?: Drink[]
 }
 
-function kind(alcohol?: string): 'beer' | 'wine' | 'spirit' | 'water' | 'empty' {
-  if (!alcohol) return 'empty'
-  const a = alcohol.toLowerCase()
-  if (a.includes('beer') || a.includes('пиво') || a.includes('cider') || a.includes('сидр'))
-    return 'beer'
-  if (
-    a.includes('wine') ||
-    a.includes('вино') ||
-    a.includes('champagne') ||
-    a.includes('шампан')
-  )
-    return 'wine'
-  if (
-    a.includes('vodka') ||
-    a.includes('whiskey') ||
-    a.includes('whisky') ||
-    a.includes('rum') ||
-    a.includes('gin') ||
-    a.includes('tequila') ||
-    a.includes('brandy') ||
-    a.includes('cognac') ||
-    a.includes('sambuca') ||
-    a.includes('liquor') ||
-    a.includes('liqueur') ||
-    a.includes('cocktail') ||
-    a.includes('водка') ||
-    a.includes('виски') ||
-    a.includes('коньяк')
-  )
-    return 'spirit'
-  if (a.includes('water') || a.includes('вода')) return 'water'
-  return 'beer'
+type IconKind = 'beer' | 'wine' | 'spirit'
+
+const ICON_KIND: Record<AlcoholType, IconKind> = {
+  Beer: 'beer',
+  'Red wine': 'wine',
+  'White wine': 'wine',
+  Wine: 'wine',
+  Champagne: 'wine',
+  Cider: 'beer',
+  Cocktail: 'spirit',
+  Liquor: 'spirit',
+  Sambuca: 'spirit',
+  Cognac: 'spirit',
+  Whiskey: 'spirit',
+  Vodka: 'spirit',
+  Rum: 'spirit',
+  Gin: 'spirit',
+  Tequila: 'spirit',
+  Brandy: 'spirit',
+  Sake: 'beer',
+  Other: 'beer',
 }
 
 const SIZES: Record<Size, number> = { sm: 28, md: 40, lg: 56 }
@@ -70,11 +59,11 @@ function SingleIcon({
   empty,
   size = 'md',
 }: {
-  alcohol?: string
+  alcohol?: AlcoholType
   empty?: boolean
   size?: Size
 }) {
-  const k = empty ? 'empty' : kind(alcohol)
+  const k = empty || !alcohol ? 'empty' : ICON_KIND[alcohol]
   const px = SIZES[size]
 
   if (k === 'empty') {
@@ -117,20 +106,6 @@ function SingleIcon({
           strokeWidth="1.5"
         />
         <path d="M14 10h12c-0.5 6-3.5 10-6 11.5C17.5 20 14.5 16 14 10z" fill="#C0392B" />
-      </svg>
-    )
-  }
-
-  if (k === 'water') {
-    return (
-      <svg width={px} height={px} viewBox="0 0 40 48" className="drink-icon water" aria-hidden>
-        <path
-          d="M11 6h18l-1.5 32a6 6 0 0 1-6 5.5h-3a6 6 0 0 1-6-5.5L11 6z"
-          fill="#B8D4F0"
-          stroke="#5B7C99"
-          strokeWidth="1.4"
-        />
-        <path d="M14 20c2 3 4 4 6 4s4-1 6-4" fill="none" stroke="#7BA3C9" strokeWidth="1" opacity="0.6" />
       </svg>
     )
   }
