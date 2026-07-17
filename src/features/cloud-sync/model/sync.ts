@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AlcoholType, Drink, SoberDay } from '@/shared/api/diary'
 import { getSupabase, isCloudConfigured } from '@/shared/api/supabase'
 import {
@@ -6,9 +7,11 @@ import {
   clearSyncedQueue,
   getAllDrinksRaw,
   getAllSoberDaysRaw,
+  getSyncCursor,
   getSyncQueue,
+  setSyncCursor,
 } from '@/shared/db/diary'
-import { chooseSyncWinner, type SyncQueueItem } from '@/shared/db/syncQueue'
+import { type SyncQueueItem, shouldApplyRemoteChange } from '@/shared/db/syncQueue'
 
 export type SyncResult =
   | { ok: true; drinksUp: number; drinksDown: number; soberUp: number; soberDown: number }
@@ -47,6 +50,7 @@ type RemoteSober = {
 let syncTimer: ReturnType<typeof setTimeout> | null = null
 let syncing = false
 const listeners = new Set<(status: SyncStatus) => void>()
+const pullPageSize = 500
 
 export function onSyncStatus(cb: (status: SyncStatus) => void): () => void {
   listeners.add(cb)
@@ -94,61 +98,17 @@ export async function fullSync(): Promise<SyncResult> {
     }
     const userId = session.user.id
     const queue = await getSyncQueue()
-    const drinkQueue = new Map(
-      queue.filter((item) => item.entity === 'drink').map((item) => [item.id, item]),
-    )
-    const soberQueue = new Map(
-      queue.filter((item) => item.entity === 'soberDay').map((item) => [item.id, item]),
-    )
     const clearQueue: SyncQueueItem[] = []
 
-    // --- DRINKS ---
-    const { data: remoteDrinks, error: pullDrinksErr } = await supabase
-      .from('drinks')
-      .select('*')
-      .eq('user_id', userId)
-
-    if (pullDrinksErr) {
-      return fail(pullDrinksErr.message)
-    }
-
     const localDrinks = await getAllDrinksRaw()
-    const remoteMap = new Map((remoteDrinks as RemoteDrink[]).map((r) => [r.id, r]))
     const localMap = new Map(localDrinks.map((d) => [d.id, d]))
-
-    const mergedDrinks: Drink[] = []
-    const toPushDrinks: Array<{ row: RemoteDrink; queue?: SyncQueueItem }> = []
-
-    const allIds = new Set([...remoteMap.keys(), ...localMap.keys()])
-    for (const id of allIds) {
-      const local = localMap.get(id)
-      const remote = remoteMap.get(id)
-      if (!local && remote) {
-        mergedDrinks.push(remoteToDrink(remote))
-        continue
-      }
-      if (!local) continue
-
-      const queueItem = drinkQueue.get(id)
-      const decision = chooseSyncWinner(local.updatedAt, remote?.updated_at, Boolean(queueItem))
-      if (decision.winner === 'local') {
-        mergedDrinks.push(local)
-        if (decision.upload) {
-          toPushDrinks.push({ row: drinkToRemote(local, userId), queue: queueItem })
-        }
-      } else if (remote) {
-        mergedDrinks.push(remoteToDrink(remote))
-      }
-      if (decision.clearQueue && queueItem) {
-        clearQueue.push(queueItem)
-      }
-    }
-
-    await bulkPutDrinksSilent(mergedDrinks)
-
     let drinksUp = 0
-    if (toPushDrinks.length) {
-      for (const chunk of chunkArr(toPushDrinks, 200)) {
+    const queuedDrinks = queue.flatMap((item) => {
+      const drink = item.entity === 'drink' ? localMap.get(item.id) : undefined
+      return drink ? [{ row: drinkToRemote(drink, userId), queue: item }] : []
+    })
+    if (queuedDrinks.length) {
+      for (const chunk of chunkArr(queuedDrinks, 200)) {
         const { error } = await supabase.from('drinks').upsert(
           chunk.map((item) => item.row),
           { onConflict: 'id' },
@@ -159,53 +119,15 @@ export async function fullSync(): Promise<SyncResult> {
       }
     }
 
-    // --- SOBER DAYS ---
-    const { data: remoteSober, error: pullSoberErr } = await supabase
-      .from('sober_days')
-      .select('*')
-      .eq('user_id', userId)
-
-    if (pullSoberErr) {
-      return fail(pullSoberErr.message)
-    }
-
     const localSober = await getAllSoberDaysRaw()
-    const rSober = new Map((remoteSober as RemoteSober[]).map((r) => [r.date, r]))
     const lSober = new Map(localSober.map((s) => [s.date, s]))
-
-    const mergedSober: SoberDay[] = []
-    const toPushSober: Array<{ row: RemoteSober; queue?: SyncQueueItem }> = []
-    const allDates = new Set([...rSober.keys(), ...lSober.keys()])
-
-    for (const date of allDates) {
-      const local = lSober.get(date)
-      const remote = rSober.get(date)
-      if (!local && remote) {
-        mergedSober.push(remoteToSober(remote))
-        continue
-      }
-      if (!local) continue
-
-      const queueItem = soberQueue.get(date)
-      const decision = chooseSyncWinner(local.updatedAt, remote?.updated_at, Boolean(queueItem))
-      if (decision.winner === 'local') {
-        mergedSober.push(local)
-        if (decision.upload) {
-          toPushSober.push({ row: soberToRemote(local, userId), queue: queueItem })
-        }
-      } else if (remote) {
-        mergedSober.push(remoteToSober(remote))
-      }
-      if (decision.clearQueue && queueItem) {
-        clearQueue.push(queueItem)
-      }
-    }
-
-    await bulkPutSoberSilent(mergedSober)
-
     let soberUp = 0
-    if (toPushSober.length) {
-      for (const chunk of chunkArr(toPushSober, 200)) {
+    const queuedSober = queue.flatMap((item) => {
+      const soberDay = item.entity === 'soberDay' ? lSober.get(item.id) : undefined
+      return soberDay ? [{ row: soberToRemote(soberDay, userId), queue: item }] : []
+    })
+    if (queuedSober.length) {
+      for (const chunk of chunkArr(queuedSober, 200)) {
         const { error } = await supabase.from('sober_days').upsert(
           chunk.map((item) => item.row),
           { onConflict: 'user_id,date' },
@@ -216,10 +138,34 @@ export async function fullSync(): Promise<SyncResult> {
       }
     }
 
+    const drinksCursor = await getSyncCursor(userId, 'drinks')
+    const remoteDrinks = await pullDrinks(supabase, userId, drinksCursor)
+    const changedDrinks = remoteDrinks
+      .filter((remote) =>
+        shouldApplyRemoteChange(localMap.get(remote.id)?.updatedAt, remote.updated_at),
+      )
+      .map(remoteToDrink)
+    await bulkPutDrinksSilent(changedDrinks)
+    if (remoteDrinks.length) {
+      await setSyncCursor(userId, 'drinks', remoteDrinks.at(-1)?.updated_at ?? drinksCursor ?? 0)
+    }
+
+    const soberCursor = await getSyncCursor(userId, 'soberDays')
+    const remoteSober = await pullSoberDays(supabase, userId, soberCursor)
+    const changedSober = remoteSober
+      .filter((remote) =>
+        shouldApplyRemoteChange(lSober.get(remote.date)?.updatedAt, remote.updated_at),
+      )
+      .map(remoteToSober)
+    await bulkPutSoberSilent(changedSober)
+    if (remoteSober.length) {
+      await setSyncCursor(userId, 'soberDays', remoteSober.at(-1)?.updated_at ?? soberCursor ?? 0)
+    }
+
     await clearSyncedQueue(clearQueue)
 
-    const drinksDown = (remoteDrinks as RemoteDrink[]).length
-    const soberDown = (remoteSober as RemoteSober[]).length
+    const drinksDown = remoteDrinks.length
+    const soberDown = remoteSober.length
 
     const result: SyncResult = {
       ok: true,
@@ -234,6 +180,58 @@ export async function fullSync(): Promise<SyncResult> {
     return fail(e instanceof Error ? e.message : String(e))
   } finally {
     syncing = false
+  }
+}
+
+async function pullDrinks(
+  supabase: SupabaseClient,
+  userId: string,
+  cursor: number | undefined,
+): Promise<RemoteDrink[]> {
+  const rows: RemoteDrink[] = []
+  let offset = 0
+
+  while (true) {
+    const request = supabase
+      .from('drinks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: true })
+      .range(offset, offset + pullPageSize - 1)
+    const { data, error } =
+      cursor === undefined ? await request : await request.gt('updated_at', cursor)
+    if (error) throw new Error(error.message)
+
+    const page = data as RemoteDrink[]
+    rows.push(...page)
+    if (page.length < pullPageSize) return rows
+    offset += page.length
+  }
+}
+
+async function pullSoberDays(
+  supabase: SupabaseClient,
+  userId: string,
+  cursor: number | undefined,
+): Promise<RemoteSober[]> {
+  const rows: RemoteSober[] = []
+  let offset = 0
+
+  while (true) {
+    const request = supabase
+      .from('sober_days')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: true })
+      .range(offset, offset + pullPageSize - 1)
+    const { data, error } =
+      cursor === undefined ? await request : await request.gt('updated_at', cursor)
+    if (error) throw new Error(error.message)
+
+    const page = data as RemoteSober[]
+    rows.push(...page)
+    if (page.length < pullPageSize) return rows
+    offset += page.length
   }
 }
 
