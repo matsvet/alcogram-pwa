@@ -3,10 +3,18 @@ import type { Drink, SoberDay } from '@/shared/api/diary'
 import { notifyLocalDataChange } from '@/shared/lib/dataChanges'
 import { makeSyncQueueItem, type SyncEntity, type SyncQueueItem } from './syncQueue'
 
+type SyncCursorKey = 'drinks' | 'soberDays'
+
+interface SyncCursor {
+  key: string
+  updatedAt: number
+}
+
 const db = new Dexie('AlcogramDiary') as Dexie & {
   drinks: EntityTable<Drink, 'id'>
   soberDays: EntityTable<SoberDay, 'date'>
   syncQueue: EntityTable<SyncQueueItem, 'key'>
+  syncCursors: EntityTable<SyncCursor, 'key'>
 }
 
 db.version(1).stores({
@@ -55,6 +63,13 @@ db.version(4)
         ...soberDays.map((s) => makeSyncQueueItem('soberDay', s.date, s.updatedAt)),
       ])
   })
+
+db.version(5).stores({
+  drinks: 'id, date, drinkIndex, alcohol, [date+drinkIndex], updatedAt, deleted',
+  soberDays: 'date, createdAt, updatedAt, deleted',
+  syncQueue: 'key, entity, updatedAt',
+  syncCursors: 'key',
+})
 
 export { db }
 
@@ -261,6 +276,21 @@ async function queueChange(entity: SyncEntity, id: string, updatedAt: number): P
 
 export async function getSyncQueue(): Promise<SyncQueueItem[]> {
   return db.syncQueue.toArray()
+}
+
+export async function getSyncCursor(
+  userId: string,
+  key: SyncCursorKey,
+): Promise<number | undefined> {
+  return (await db.syncCursors.get(`${userId}:${key}`))?.updatedAt
+}
+
+export async function setSyncCursor(
+  userId: string,
+  key: SyncCursorKey,
+  updatedAt: number,
+): Promise<void> {
+  await db.syncCursors.put({ key: `${userId}:${key}`, updatedAt })
 }
 
 /** Remove only the queue entries that have not changed during this sync. */

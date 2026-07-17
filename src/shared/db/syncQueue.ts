@@ -35,3 +35,10 @@ export function chooseSyncWinner(
   }
   return { winner: 'remote', upload: false, clearQueue: queued }
 }
+
+export function shouldApplyRemoteChange(
+  localUpdatedAt: number | undefined,
+  remoteUpdatedAt: number,
+): boolean {
+  return localUpdatedAt === undefined || localUpdatedAt <= remoteUpdatedAt
+}
