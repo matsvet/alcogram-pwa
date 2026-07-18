@@ -42,17 +42,24 @@ const ICONS: Record<AlcoholType, IconConfig> = {
 const SIZES: Record<Size, number> = { sm: 28, md: 40, lg: 56 }
 
 export function DrinkIcon({ alcohol, empty, size = 'md', stack }: Props) {
-  if (stack && stack.length > 1) {
-    const shown = stack.slice(0, 3)
-    return (
-      <span className={styles.stack}>
-        {shown.map((d, i) => (
-          <span key={d.id} className={styles.stackItem} style={{ zIndex: shown.length - i }}>
-            <SingleIcon alcohol={d.alcohol} size={size} />
-          </span>
-        ))}
-      </span>
-    )
+  if (stack) {
+    const shown = [...new Map(stack.map((drink) => [drink.alcohol, drink])).values()].slice(0, 3)
+
+    if (shown.length === 1) {
+      return <SingleIcon alcohol={shown[0].alcohol} size={size} />
+    }
+
+    if (shown.length > 1) {
+      return (
+        <span className={styles.stack}>
+          {shown.map((d, i) => (
+            <span key={d.id} className={styles.stackItem} style={{ zIndex: shown.length - i }}>
+              <SingleIcon alcohol={d.alcohol} size={size} />
+            </span>
+          ))}
+        </span>
+      )
+    }
   }
 
   if (empty || !alcohol) {
