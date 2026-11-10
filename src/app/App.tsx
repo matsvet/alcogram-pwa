@@ -6,7 +6,6 @@ import { StatsPage } from '@/pages/statistics'
 import type { Drink } from '@/shared/api/diary'
 import { isCloudConfigured } from '@/shared/api/supabase'
 import { onLocalDataChange } from '@/shared/lib/dataChanges'
-import styles from './App.module.css'
 import type { TabId } from './model/navigation'
 import { BottomNav } from './ui/BottomNav'
 
@@ -69,9 +68,9 @@ export default function App() {
   }
 
   return (
-    <div className={styles.shell}>
+    <div className="relative mx-auto flex h-[100dvh] min-h-full max-w-[480px] flex-col">
       <main
-        className={`${styles.main} ${tab === 'calendar' ? styles.calendarMain : tab === 'stats' ? styles.statsMain : ''}`}
+        className={`flex-1 min-h-0 px-3 pt-3 pb-[calc(72px+env(safe-area-inset-bottom,0px))] ${tab === 'calendar' || tab === 'stats' ? 'overflow-hidden' : 'overflow-y-auto'}`}
       >
         {tab === 'calendar' && (
           <CalendarPage

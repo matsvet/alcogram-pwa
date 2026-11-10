@@ -1,7 +1,6 @@
 import { monthName } from '@/shared/lib/date'
 import { useI18n } from '@/shared/lib/i18n'
 import type { Period } from '../model/statistics'
-import styles from './StatsPeriodControls.module.css'
 
 interface Props {
   period: Period
@@ -34,12 +33,12 @@ export function StatsPeriodControls({ period, year, month, onPeriodChange, onYea
 
   return (
     <>
-      <div className={styles.tabs}>
+      <div className="mb-2 flex rounded-[10px] bg-[#eef1f8] p-0.75">
         {(['month', 'year', 'all'] as Period[]).map((nextPeriod) => (
           <button
             key={nextPeriod}
             type="button"
-            className={`${styles.tab} ${period === nextPeriod ? styles.isActive : ''}`}
+            className={`flex-1 rounded-lg p-2 text-[0.9rem] text-text-muted ${period === nextPeriod ? 'bg-white font-semibold text-primary shadow-[0_1px_4px_rgba(0,0,0,0.06)]' : ''}`}
             onClick={() => onPeriodChange(nextPeriod)}
           >
             {nextPeriod === 'month' ? t('month') : nextPeriod === 'year' ? t('year') : t('all')}
@@ -48,12 +47,12 @@ export function StatsPeriodControls({ period, year, month, onPeriodChange, onYea
       </div>
 
       {period === 'all' ? (
-        <p className={styles.periodLabel}>{label}</p>
+        <p className="mb-4 text-center text-[0.9rem] text-text-muted">{label}</p>
       ) : (
-        <div className={styles.periodNavigation}>
+        <div className="my-5 flex items-center justify-center gap-4">
           <button
             type="button"
-            className={styles.periodButton}
+            className="flex size-10 items-center justify-center rounded-full text-[1.6rem] text-primary active:bg-primary/12"
             onClick={previousPeriod}
             aria-label={period === 'month' ? t('previousMonth') : t('previousYear')}
           >
@@ -62,7 +61,7 @@ export function StatsPeriodControls({ period, year, month, onPeriodChange, onYea
           {period === 'month' ? (
             <input
               type="month"
-              className={styles.periodPicker}
+              className="w-[195px] min-h-10 rounded-lg border border-border bg-card px-2.5 py-1.5 text-center font-semibold text-primary"
               value={`${year}-${String(month).padStart(2, '0')}`}
               onChange={(event) => {
                 const [nextYear, nextMonth] = event.target.value.split('-').map(Number)
@@ -73,7 +72,7 @@ export function StatsPeriodControls({ period, year, month, onPeriodChange, onYea
           ) : (
             <input
               type="number"
-              className={styles.periodPicker}
+              className="w-[195px] min-h-10 rounded-lg border border-border bg-card px-2.5 py-1.5 text-center font-semibold text-primary"
               value={year}
               min="1"
               onChange={(event) => {
@@ -85,7 +84,7 @@ export function StatsPeriodControls({ period, year, month, onPeriodChange, onYea
           )}
           <button
             type="button"
-            className={styles.periodButton}
+            className="flex size-10 items-center justify-center rounded-full text-[1.6rem] text-primary active:bg-primary/12"
             onClick={nextPeriod}
             aria-label={period === 'month' ? t('nextMonth') : t('nextYear')}
           >

@@ -8,7 +8,6 @@ import {
 import { useI18n } from '@/shared/lib/i18n'
 import { PageCard } from '@/shared/ui'
 import { computeStats, type Period, type PeriodStats, periodBounds } from '../model/statistics'
-import styles from './StatsPage.module.css'
 import { StatsPeriodControls } from './StatsPeriodControls'
 import { StatsSummary } from './StatsSummary'
 import { TopTypes } from './TopTypes'
@@ -44,9 +43,9 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
   }, [period, year, month, refreshKey])
 
   return (
-    <div className={styles.root}>
-      <PageCard>
-        <h1 className={styles.title}>{t('statistics')}</h1>
+    <div className="h-full min-h-full">
+      <PageCard className="flex h-full min-h-0 flex-col">
+        <h1 className="mb-4 text-center text-[1.35rem] text-primary">{t('statistics')}</h1>
         <StatsPeriodControls
           period={period}
           year={year}
@@ -56,7 +55,7 @@ export function StatsPage({ year, month, onYearMonth, refreshKey }: Props) {
         />
 
         {!stats || (stats.totalDrinks === 0 && stats.longestSoberStreak === 0) ? (
-          <p className={styles.emptyState}>{t('noPeriodData')}</p>
+          <p className="text-center text-text-muted">{t('noPeriodData')}</p>
         ) : (
           <>
             <StatsSummary stats={stats} period={period} year={year} month={month} />
