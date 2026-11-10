@@ -8,6 +8,7 @@
 ## Стек
 
 - TypeScript + React + Vite + vite-plugin-pwa
+- Tailwind CSS 4
 - Dexie (IndexedDB)
 - Supabase (Auth + Postgres), опционально
 - Feature-Sliced Design v2.1

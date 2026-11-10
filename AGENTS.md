@@ -44,8 +44,11 @@ UI unless the task explicitly changes the product language.
 ### Tailwind CSS
 
 Use Tailwind CSS utility classes in JSX for component and page styles.
-Global CSS in `src/app/styles/` is limited to the Tailwind entry point,
-design tokens declared with `@theme`, and base element rules.
+Do not introduce `.module.css` files, CSS-in-JS, or component-specific stylesheets.
+Global CSS is strictly confined to `src/app/styles/index.css` (Tailwind import,
+design tokens defined under `@theme`, modal animations, and base rules).
+Consume shared design tokens through Tailwind utility classes (such as `bg-primary`,
+`bg-card`, `text-text`, `text-text-muted`, `border-border`, and `rounded-card`).
 
 ## Configuration, Data, and Security
 
